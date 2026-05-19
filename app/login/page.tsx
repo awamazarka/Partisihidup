@@ -29,7 +29,7 @@ export default function LoginPage() {
             {isSignUp ? 'Create Account' : 'Access Terminal'}
           </h1>
           <p className="font-bold text-xs mt-2 opacity-60 uppercase italic">
-            {isSignUp ? 'Join the collectors community' : 'Enter your credentials'}
+            {isSignUp ? 'Join the collectors community' : 'Isi dulu detail akunmu disini,ya.'}
           </p>
         </div>
 
@@ -120,7 +120,7 @@ export default function LoginPage() {
             onClick={() => setIsSignUp(!isSignUp)}
             className="text-[10px] font-black uppercase italic hover:underline underline-offset-4 decoration-2"
           >
-            {isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign Up"}
+            {isSignUp ? 'Already have an account? Login' : "Belum punya akun? Daftar dulu, yuk!"}
           </button>
           
           <div className="flex items-center gap-2 opacity-30">

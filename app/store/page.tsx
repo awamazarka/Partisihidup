@@ -65,8 +65,8 @@ export default function StorePage() {
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#A3E635] border-[2px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-black text-[10px] font-black uppercase tracking-widest">
             <Tag className="w-3 h-3" /> Live Inventory
           </div>
-          <h1 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter text-black">Premium Store</h1>
-          <p className="text-black font-bold italic text-sm md:text-base">Browse our collection and complete your garage.</p>
+          <h1 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter text-black">Garasi Premium</h1>
+          <p className="text-black font-bold italic text-sm md:text-base">Cek koleksi pilihan kita dan lengkapin isi garasimu sekarang!</p>
         </div>
         
         <div className="flex items-center gap-3 w-full lg:w-auto">

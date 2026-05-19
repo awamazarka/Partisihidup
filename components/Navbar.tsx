@@ -49,7 +49,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
               <span className="font-black text-black text-xl md:text-2xl italic">AB</span>
             </div>
             <span className="font-black text-sm md:text-lg tracking-tighter uppercase italic text-black">
-              <span className="hidden sm:inline">AditBunta </span>OnlyDiecast
+              <span className="hidden sm:inline"></span>Only Diecaster Santuy
             </span>
           </Link>
           
