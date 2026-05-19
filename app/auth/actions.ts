@@ -64,6 +64,7 @@ export async function signup(formData: FormData) {
       data: {
         username: username,
       },
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://partisihidup.vercel.app'}/auth/callback`,
     },
   })
 

@@ -8,9 +8,14 @@ export async function updateSession(request: NextRequest) {
     },
   })
 
+  // Security check: ensure env variables exist to prevent middleware crash
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return response;
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         get(name: string) {
@@ -54,13 +59,23 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
+  // This will refresh session if expired - necessary for Server Components
   await supabase.auth.getUser()
 
   return response
 }
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  try {
+    return await updateSession(request)
+  } catch (e) {
+    // If middleware fails, still return response to prevent 500
+    return NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    })
+  }
 }
 
 export const config = {
