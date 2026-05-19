@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Search, Filter, Plus, Edit, Trash2, Image as ImageIcon, X, Loader2, Upload, Save, Check } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
-const BRANDS = ["Hot Wheels", "Mini GT", "INNO64", "MATCHBOX", "TARMAC", "Tomica", "Tren Hobby", "Almost Real", "Star Race", "TIME MICRO", "Other"];
+const BRANDS = ["Hot Wheels", "Mini GT", "INNO64", "MATCHBOX", "TARMAC", "Tomica", "Tren Hobby", "Almost Real", "Star Race", "TIME MICRO", "KAIDO HOUSE","POPRACE","Other"];
 const SCALES = ["1:18", "1:43", "1:64", "Other"];
 const CONDITIONS = ["Mint in Sealed Box", "Open Box Good", "Not Good with Box", "Loose", "Damaged"];
 
