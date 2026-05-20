@@ -1,7 +1,27 @@
-import { ArrowRight, Sparkles, Zap, ShieldCheck, Box } from 'lucide-react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { ArrowRight, Sparkles, Zap, ShieldCheck, Box, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
+import { createClient } from '@/utils/supabase/client';
 
 export default function Home() {
+  const [featuredItems, setFeaturedItems] = useState<any[]>([]);
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchFeatured() {
+      const { data } = await supabase
+        .from('car_collection')
+        .select('*')
+        .eq('is_featured', true)
+        .limit(4);
+      
+      if (data) setFeaturedItems(data);
+    }
+    fetchFeatured();
+  }, []);
+
   return (
     <div className="relative min-h-screen flex flex-col bg-zinc-950 overflow-hidden text-white selection:bg-[#FFD600] selection:text-black">
       {/* Background Image Grid */}
@@ -20,18 +40,6 @@ export default function Home() {
              'https://images.unsplash.com/photo-1493238541810-43478d8883cc?q=80&w=800&auto=format&fit=crop', // Purple
              'https://images.unsplash.com/photo-1541443131876-44b03de101c5?q=80&w=800&auto=format&fit=crop', // Toy Car
              'https://images.unsplash.com/photo-1532974297617-c0f05fe48bff?q=80&w=800&auto=format&fit=crop', // Blue car
-             'https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1542282088-fe8426682b8f?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1553440569-bcc63803a83d?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1502877336475-b36735a48df2?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1493238541810-43478d8883cc?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1541443131876-44b03de101c5?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1532974297617-c0f05fe48bff?q=80&w=800&auto=format&fit=crop',
            ].map((url, idx) => (
              <div key={idx} className="aspect-[4/3] relative group overflow-hidden border-[0.5px] border-zinc-800">
                 <img src={url} alt="Diecast Background" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -64,20 +72,22 @@ export default function Home() {
             <Link href="/login" className="neo-brutal-btn-yellow text-lg md:text-xl px-10 py-5 inline-flex items-center justify-center">
               Get Started Free <ArrowRight className="ml-2 w-6 h-6" />
             </Link>
-            <button className="bg-zinc-900 border-[3px] border-zinc-700 shadow-[4px_4px_0px_0px_rgba(255,214,0,1)] font-black uppercase tracking-wider px-10 py-5 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(255,214,0,1)] text-white text-lg md:text-xl">
+            <Link href="/collection" className="bg-zinc-900 border-[3px] border-zinc-700 shadow-[4px_4px_0px_0px_rgba(255,214,0,1)] font-black uppercase tracking-wider px-10 py-5 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(255,214,0,1)] text-white text-lg md:text-xl inline-flex items-center justify-center">
               View Showcase
-            </button>
+            </Link>
           </div>
         </section>
 
         {/* Brand Carousel */}
-        <div className="w-full py-8 md:py-12 overflow-hidden border-y-[4px] border-black bg-[#A3E635] my-10 transform -rotate-1 scale-105 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-            <div className="flex animate-scroll gap-10 md:gap-20 items-center min-w-[200%]">
+        <div className="w-full py-8 md:py-12 overflow-hidden border-y-[4px] border-black bg-[#A3E635] my-10 transform -rotate-1 scale-105 shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex">
+            <div className="flex animate-scroll-reverse gap-10 md:gap-20 items-center whitespace-nowrap px-10">
                 {[
+                    'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS', 'INNO64', 'MAJORETTE', 'AUTOART',
+                    'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS', 'INNO64', 'MAJORETTE', 'AUTOART',
                     'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS', 'INNO64', 'MAJORETTE', 'AUTOART',
                     'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS', 'INNO64', 'MAJORETTE', 'AUTOART'
                 ].map((brand, i) => (
-                    <span key={i} className="text-2xl md:text-4xl font-black italic uppercase tracking-tighter whitespace-nowrap text-black">
+                    <span key={i} className="text-2xl md:text-4xl font-black italic uppercase tracking-tighter text-black">
                         {brand}
                     </span>
                 ))}
@@ -113,26 +123,35 @@ export default function Home() {
               <div className="space-y-4">
                 <h2 className="text-4xl font-black uppercase italic text-white">Cekidot Koleksi Saya!</h2>
                 <p className="text-zinc-400 font-bold max-w-md">
-                  Silakan jelajahi lebih lanjut untuk melihat koleksi-koleksi Diecast Miniscale milik saya seorang diecaster santuy.
+                  Silakan jelajahi lebih lanjut untuk melihat koleksi-koleksi Diecast Miniscale milik diecaster santuy.
                 </p>
               </div>
-              <button className="bg-[#FFD600] text-black font-black uppercase px-6 py-3 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all">
+              <Link href="/collection" className="bg-[#FFD600] text-black font-black uppercase px-6 py-3 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all inline-flex items-center">
                 Explore All Items <ArrowRight className="inline-block ml-2 w-5 h-5" />
-              </button>
+              </Link>
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                'https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?q=80&w=400&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=400&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1542282088-fe8426682b8f?q=80&w=400&auto=format&fit=crop',
-                'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=400&auto=format&fit=crop',
-              ].map((url, i) => (
-                <div key={i} className="aspect-square bg-zinc-800 border-[3px] border-zinc-700 shadow-[6px_6px_0px_0px_rgba(255,214,0,0.2)] flex items-center justify-center relative overflow-hidden group/item hover:border-[#FFD600] transition-colors">
-                  <img src={url} alt={`Diecast ${i}`} className="w-full h-full object-cover opacity-50 group-hover/item:opacity-100 transition-opacity" />
-                  <span className="absolute bottom-2 right-2 text-white font-black text-2xl italic">#0{i+1}</span>
-                </div>
-              ))}
+              {featuredItems.length > 0 ? featuredItems.map((item, i) => (
+                <Link href="/collection" key={item.id} className="aspect-square bg-zinc-800 border-[3px] border-zinc-700 shadow-[6px_6px_0px_0px_rgba(255,214,0,0.2)] flex items-center justify-center relative overflow-hidden group/item hover:border-[#FFD600] transition-colors text-black">
+                  {item.images && item.images[0] ? (
+                      <img src={item.images[0]} alt={item.name} className="w-full h-full object-cover opacity-50 group-hover/item:opacity-100 transition-opacity duration-500" />
+                  ) : (
+                      <Box className="w-12 h-12 text-white/10" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
+                      <p className="text-[10px] font-black uppercase italic text-[#A3E635] leading-none mb-1">{item.brand}</p>
+                      <p className="text-xs font-black uppercase italic text-white leading-tight truncate">{item.name}</p>
+                  </div>
+                  <span className="absolute top-2 right-2 text-white font-black text-xl italic opacity-20">#0{i+1}</span>
+                </Link>
+              )) : (
+                [1,2,3,4].map((_, i) => (
+                  <div key={i} className="aspect-square bg-zinc-800/50 border-[3px] border-dashed border-zinc-700 flex items-center justify-center relative overflow-hidden">
+                    <Box className="w-12 h-12 text-white/5" />
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </section>
@@ -145,7 +164,7 @@ export default function Home() {
         </div>
         
         <div className="w-full h-24 md:h-32 mb-4 relative overflow-hidden flex items-center">
-          <div className="flex gap-20 md:gap-40 animate-scroll-fast whitespace-nowrap min-w-max px-10 md:px-20">
+          <div className="flex gap-20 md:gap-40 animate-scroll-fast-reverse whitespace-nowrap min-w-max px-10 md:px-20">
             <NeoBrutalCar type="porsche" color="bg-white" />
             <NeoBrutalCar type="ferrari" color="bg-red-600" />
             <NeoBrutalCar type="lambo" color="bg-[#A3E635]" />

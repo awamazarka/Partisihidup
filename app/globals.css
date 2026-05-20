@@ -39,25 +39,58 @@ body {
     @apply font-bold border-2 border-transparent px-3 py-1 rounded-lg text-black hover:border-black hover:bg-[#FFD600] transition-all;
   }
 
+  /* --- ANIMATIONS --- */
+
   @keyframes scroll {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
-  }
-
-  @keyframes drive {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(200%); }
   }
 
   .animate-scroll {
     animation: scroll 30s linear infinite;
   }
 
-  .animate-drive {
-    animation: drive 15s linear infinite;
+  .animate-scroll-reverse {
+    animation: scroll-reverse 30s linear infinite;
   }
 
-  .animate-scroll-fast {
-    animation: scroll 12s linear infinite;
+  @keyframes scroll-reverse {
+    0% { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+  }
+
+  .animate-scroll-fast-reverse {
+    animation: scroll-reverse 12s linear infinite;
+  }
+
+  @keyframes drive-left {
+    0% { transform: translateX(100vw); }
+    100% { transform: translateX(-100vw); }
+  }
+
+  .animate-drive-left {
+    animation: drive-left 15s linear infinite;
+  }
+
+  @keyframes drive-right {
+    0% { transform: translateX(-100vw); }
+    100% { transform: translateX(100vw); }
+  }
+
+  .animate-drive-right {
+    animation: drive-right 15s linear infinite;
+  }
+
+  /* Custom Scrollbar for better UX in modals */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 10px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #FAF8F5;
+    border-left: 3px solid black;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #FFD600;
+    border: 3px solid black;
   }
 }

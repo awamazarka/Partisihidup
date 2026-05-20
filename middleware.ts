@@ -1,14 +1,14 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function updateSession(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
 
-  // Security check: ensure env variables exist to prevent middleware crash
+  // Security check
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
     return response;
   }
@@ -22,71 +22,40 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
+          request.cookies.set({ name, value, ...options })
+          response = NextResponse.next({ request: { headers: request.headers } })
+          response.cookies.set({ name, value, ...options })
         },
         remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
+          request.cookies.set({ name, value: '', ...options })
+          response = NextResponse.next({ request: { headers: request.headers } })
+          response.cookies.set({ name, value: '', ...options })
         },
       },
     }
   )
 
-  // This will refresh session if expired - necessary for Server Components
-  await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+  const userRole = request.cookies.get('user-role')?.value
+
+  const adminOnlyPaths = ['/dashboard', '/inventory', '/orders', '/analytics', '/profit']
+  const isPathAdminOnly = adminOnlyPaths.some(path => request.nextUrl.pathname.startsWith(path))
+
+  // 1. Strict Protection: If trying to access admin page without 'admin' role cookie
+  if (isPathAdminOnly && userRole !== 'admin') {
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  // 2. User/Guest Protection: Redirect standard users away from admin paths even if authenticated in Supabase
+  if (isPathAdminOnly && user && userRole !== 'admin') {
+     return NextResponse.redirect(new URL('/store', request.url))
+  }
 
   return response
 }
 
-export async function middleware(request: NextRequest) {
-  try {
-    return await updateSession(request)
-  } catch (e) {
-    // If middleware fails, still return response to prevent 500
-    return NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    })
-  }
-}
-
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Tag, Heart, ShoppingCart, Loader2, X, MessageCircle, QrCode, ArrowRight, Info } from 'lucide-react';
+import { ShoppingBag, Search, Tag, Heart, ShoppingCart, Loader2, X, MessageCircle, QrCode, ArrowRight, Info, ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
@@ -13,6 +13,7 @@ export default function StorePage() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [checkoutStep, setCheckoutStep] = useState<'details' | 'payment'>('details');
   const [role, setRole] = useState<string | null>(null);
+  const [activeImg, setActiveImg] = useState(0);
 
   const supabase = createClient();
 
@@ -30,8 +31,13 @@ export default function StorePage() {
       .order('created_at', { ascending: false });
     
     if (data) {
-      setItems(data);
-      setFilteredItems(data);
+      // Normalize images into array
+      const normalizedData = data.map(item => ({
+        ...item,
+        displayImages: Array.isArray(item.images) ? item.images : (item.image_url ? [item.image_url] : [])
+      }));
+      setItems(normalizedData);
+      setFilteredItems(normalizedData);
     }
     setLoading(false);
   }
@@ -91,10 +97,10 @@ export default function StorePage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {filteredItems.length > 0 ? filteredItems.map((item) => (
-            <div key={item.id} onClick={() => setSelectedItem(item)} className="neo-brutal-card group flex flex-col p-4 rounded-2xl cursor-pointer">
+            <div key={item.id} onClick={() => {setSelectedItem(item); setActiveImg(0);}} className="neo-brutal-card group flex flex-col p-4 rounded-2xl cursor-pointer">
               <div className="aspect-square bg-[#FAF8F5] border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden mb-4 group-hover:bg-[#FFD600] transition-colors">
-                {item.image_url ? (
-                  <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                {item.displayImages.length > 0 ? (
+                  <img src={item.displayImages[0]} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center opacity-10">
                     <ShoppingBag className="w-20 h-20" />
@@ -138,42 +144,70 @@ export default function StorePage() {
       {/* Item Detail & Checkout Modal */}
       {selectedItem && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/50 backdrop-blur-md">
-              <div className="bg-white border-[4px] border-black shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] w-full max-w-4xl rounded-3xl overflow-hidden relative flex flex-col md:flex-row max-h-[90vh]">
-                  <button onClick={() => {setSelectedItem(null); setCheckoutStep('details');}} className="absolute top-6 right-6 z-10 p-1 border-[3px] border-black bg-[#FB923C] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
+              <div className="bg-white border-[4px] border-black shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] w-full max-w-5xl rounded-3xl overflow-hidden relative flex flex-col md:flex-row max-h-[90vh]">
+                  <button onClick={() => {setSelectedItem(null); setCheckoutStep('details');}} className="absolute top-6 right-6 z-10 p-1 border-[3px] border-black bg-[#FB923C] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
                       <X className="w-6 h-6 text-black" />
                   </button>
 
                   {/* Image Column */}
-                  <div className="md:w-1/2 bg-[#FAF8F5] border-r-[4px] border-black flex items-center justify-center p-8">
-                      <div className="w-full aspect-square border-[4px] border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden">
-                          {selectedItem.image_url ? (
-                              <img src={selectedItem.image_url} className="w-full h-full object-cover" />
-                          ) : (
-                              <div className="w-full h-full flex items-center justify-center opacity-20"><ShoppingBag className="w-32 h-32" /></div>
-                          )}
+                  <div className="md:w-1/2 bg-[#FAF8F5] border-r-[4px] border-black flex flex-col max-h-full">
+                      <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
+                          <div className="w-full aspect-square border-[4px] border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden relative">
+                              {selectedItem.displayImages.length > 0 ? (
+                                  <img src={selectedItem.displayImages[activeImg]} className="w-full h-full object-cover" alt={selectedItem.name} />
+                              ) : (
+                                  <div className="w-full h-full flex items-center justify-center opacity-20"><ShoppingBag className="w-32 h-32" /></div>
+                              )}
+                              {selectedItem.displayImages.length > 1 && (
+                                <div className="absolute bottom-4 right-4 bg-black text-[#FFD600] px-2 py-1 font-black text-[10px] border-[2px] border-[#FFD600]">
+                                    {activeImg + 1} / {selectedItem.displayImages.length}
+                                </div>
+                              )}
+                          </div>
                       </div>
+                      
+                      {selectedItem.displayImages.length > 1 && (
+                        <div className="flex gap-2 p-4 border-t-[3px] border-black overflow-x-auto bg-white custom-scrollbar">
+                            {selectedItem.displayImages.map((img: string, idx: number) => (
+                                <button 
+                                    key={idx} 
+                                    onClick={() => setActiveImg(idx)}
+                                    className={`w-16 h-16 border-[3px] border-black shrink-0 transition-all ${activeImg === idx ? 'shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]' : 'opacity-40'}`}
+                                >
+                                    <img src={img} className="w-full h-full object-cover" />
+                                </button>
+                            ))}
+                        </div>
+                      )}
                   </div>
 
                   {/* Info Column */}
-                  <div className="md:w-1/2 p-10 flex flex-col bg-white overflow-y-auto">
+                  <div className="md:w-1/2 p-10 flex flex-col bg-white overflow-y-auto custom-scrollbar">
                       {checkoutStep === 'details' ? (
                           <>
                             <div className="mb-8">
                                 <div className="inline-block bg-[#FFD600] border-[2px] border-black px-3 py-1 font-black text-xs uppercase italic shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] mb-4">
                                     {selectedItem.brand} - {selectedItem.scale}
                                 </div>
-                                <h2 className="text-4xl font-black uppercase italic leading-none text-black underline mb-2">{selectedItem.name}</h2>
+                                <h2 className="text-4xl font-black uppercase italic leading-none text-black underline mb-2 break-words">{selectedItem.name}</h2>
                                 <p className="text-2xl font-black text-[#05ffa1] drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] italic">{formatIDR(selectedItem.sell_price)}</p>
+                            </div>
+
+                            <div className="bg-[#FAF8F5] border-[3px] border-black p-6 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                                <span className="block text-[10px] font-black uppercase italic underline mb-2">Item Description</span>
+                                <p className="text-sm font-bold text-black leading-relaxed whitespace-pre-wrap">
+                                    {selectedItem.description || "Premium quality diecast scale model. Perfect for your curated garage showcase. Mint condition guaranteed unless specified."}
+                                </p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 mb-8">
                                 <DetailBox label="Condition" value={selectedItem.condition || 'MINT'} color="bg-[#A3E635]" />
                                 <DetailBox label="Color" value={selectedItem.color || 'STANDARD'} color="bg-[#FB923C]" />
                                 <DetailBox label="Availability" value={`${selectedItem.stock} UNITS`} color="bg-[#FFD600]" />
-                                <DetailBox label="SKU" value={`AB-${selectedItem.id.slice(0,5).toUpperCase()}`} color="bg-white" />
+                                <DetailBox label="ID" value={selectedItem.id.slice(0,8).toUpperCase()} color="bg-white" />
                             </div>
 
-                            <div className="mt-auto space-y-4">
+                            <div className="mt-auto space-y-4 pt-4 border-t-[3px] border-black border-dashed">
                                 {role ? (
                                     <button 
                                         onClick={() => setCheckoutStep('payment')}
@@ -226,7 +260,7 @@ export default function StorePage() {
 
                             <button 
                                 onClick={() => setCheckoutStep('details')}
-                                className="mt-8 text-black font-black uppercase italic underline text-sm"
+                                className="mt-8 text-black font-black uppercase italic underline text-sm hover:text-[#FB923C] transition-colors"
                             >
                                 ← BACK TO DETAILS
                             </button>
