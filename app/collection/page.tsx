@@ -421,7 +421,7 @@ function CollectionCard({ item, onImageClick, isAdmin, onEdit }: {
                 {item.brand}
             </span>
             {item.is_featured && (
-                <Sparkles className="w-4 h-4 text-[#FB923C] fill-[#FB923C]" title="Featured" />
+                <Sparkles className="w-4 h-4 text-[#FB923C] fill-[#FB923C]" />
             )}
         </div>
         <div className="flex gap-1">
