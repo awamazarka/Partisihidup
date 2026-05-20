@@ -38,7 +38,15 @@ export default function CollectionPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    setRole(localStorage.getItem('user-role'));
+    const getCookie = (name: string) => {
+      if (typeof document === 'undefined') return null;
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(';').shift();
+      return null;
+    };
+
+    setRole(getCookie('user-role'));
     fetchCollection();
   }, []);
 
