@@ -31,11 +31,13 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
   const supabase = createClient();
 
   useEffect(() => {
-    // Function to get cookie value
-    const getCookie = (name: string) => {
+    const getCookie = (name: string): string | null => {
+      if (typeof document === 'undefined') return null;
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift();
+      if (parts.length === 2) {
+          return parts.pop()?.split(';').shift() || null;
+      }
       return null;
     };
 
@@ -46,7 +48,6 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
             setUsername(session.user.email?.split('@')[0] || 'Member');
-            // If logged in via Supabase but no role cookie, default to user
             if (!currentRole) setRole('user');
         } else if (currentRole === 'admin') {
             setUsername('Admin');
@@ -56,7 +57,6 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
     };
     getUser();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const updatedRole = getCookie('user-role');
       if (session?.user) {
@@ -81,7 +81,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
         window.removeEventListener('scroll', handleScroll);
         subscription.unsubscribe();
     };
-  }, [initialRole]);
+  }, [initialRole, supabase.auth]);
 
   const navItems = role === 'admin' ? adminItems : userItems;
 
@@ -218,7 +218,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
       {/* Overlay to close menu */}
       {isMenuOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-md lg:hidden"
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
           onClick={() => setIsMenuOpen(false)}
         />
       )}

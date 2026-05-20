@@ -38,15 +38,17 @@ export default function CollectionPage() {
   const supabase = createClient();
 
   useEffect(() => {
-    const getCookie = (name: string) => {
+    const getCookie = (name: string): string | null => {
       if (typeof document === 'undefined') return null;
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop()?.split(';').shift();
+      if (parts.length === 2) {
+          return parts.pop()?.split(';').shift() || null;
+      }
       return null;
     };
 
-    setRole(getCookie('user-role') || null);
+    setRole(getCookie('user-role'));
     fetchCollection();
   }, []);
 

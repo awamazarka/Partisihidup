@@ -37,7 +37,20 @@ export default function Footer() {
 
   return (
     <footer className="mt-auto border-t-[4px] border-black bg-white">
-      {/* ... Road animation ... */}
+      {/* Single Animated Car Lane - Moving Left */}
+      <div className="h-12 bg-[#FAF8F5] border-b-[3px] border-black relative overflow-hidden flex items-center">
+        <div className="absolute inset-0 flex items-center justify-around opacity-10 pointer-events-none">
+           {[...Array(20)].map((_, i) => (
+             <div key={i} className="w-8 h-[2px] bg-black/20" />
+           ))}
+        </div>
+        <div className="animate-drive-left absolute w-full flex justify-end">
+          <div className="flex flex-col items-center">
+             <Car className="w-8 h-8 text-black scale-x-[-1]" />
+             <div className="w-10 h-1 bg-black/10 blur-[2px] mt-[-4px]" />
+          </div>
+        </div>
+      </div>
 ...
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
