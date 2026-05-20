@@ -46,7 +46,7 @@ export default function CollectionPage() {
       return null;
     };
 
-    setRole(getCookie('user-role'));
+    setRole(getCookie('user-role') || null);
     fetchCollection();
   }, []);
 
