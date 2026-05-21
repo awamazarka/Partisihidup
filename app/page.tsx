@@ -82,7 +82,7 @@ export default function Home() {
         </section>
 
         {/* Brand Marquee - Yellow Bar */}
-        <div className="w-full py-6 md:py-10 bg-[#FFDE03] border-y-[4px] border-black mt-16 md:mt-24 transform -rotate-1 scale-105 shadow-[0_10px_40px_rgba(0,0,0,0.4)] flex relative z-20 overflow-hidden">
+        <div className="w-full py-6 md:py-10 bg-[#FFDE03] border-y-[4px] border-black mt-16 md:mt-24 transform -rotate-1 relative z-20 overflow-hidden">
             <div className="flex animate-scroll gap-10 md:gap-24 items-center whitespace-nowrap px-10">
                 {[
                     'MAJORETTE', 'AUTOART', 'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS',
@@ -97,8 +97,8 @@ export default function Home() {
         </div>
 
         {/* Section: Why Diecaster Santuy - Light Background */}
-        <section className="w-full bg-[#FAF8F5] flex flex-col items-center pt-24 md:pt-32 pb-20 md:pb-24 border-t-[4px] border-black -mt-8 md:-mt-12 relative z-10 transform -rotate-1 scale-105">
-            <div className="w-full flex flex-col items-center transform rotate-1 px-6">
+        <section className="w-full bg-[#FAF8F5] border-t-[4px] border-black -mt-10 md:-mt-14 relative z-10">
+            <div className="w-full max-w-7xl mx-auto flex flex-col items-center pt-24 md:pt-32 pb-20 md:pb-24 px-6">
                 <div className="bg-black text-[#A3E635] px-4 py-1 border-[2px] border-black mb-4 shadow-[3px_3px_0px_0px_#FFDE03]">
                     <span className="font-black uppercase italic text-[10px] tracking-widest">WHY DIECASTER SANTUY?</span>
                 </div>
@@ -116,7 +116,7 @@ export default function Home() {
 
 
                 {/* Blue HOT DEAL Box */}
-                <div className="mb-12 w-full max-w-4xl">
+                <div className="mb-12 w-full max-w-4xl mx-auto">
                     <div className="bg-[#0066FF] border-[4px] border-black p-6 md:p-10 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] md:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] flex flex-col md:flex-row items-center md:justify-between gap-6 md:gap-8 transform -rotate-1">
                         <div className="space-y-3 text-center md:text-left">
                             <div className="inline-block bg-white border-[2px] border-black px-3 py-1 text-black font-black text-[10px] md:text-xs uppercase">🔥 HOT DEAL</div>
@@ -135,7 +135,7 @@ export default function Home() {
                 </div>
 
                 {/* Reference Features Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl mx-auto">
                     <FeatureCard 
                         icon={<Tag className="w-6 h-6 text-black" />}
                         title="HARGA TRANSPARAN."
@@ -164,7 +164,7 @@ export default function Home() {
                 </div>
 
                 {/* Dynamic Showcase */}
-                <div className="w-full max-w-6xl py-20 md:py-32">
+                <div className="w-full max-w-6xl mt-20 md:mt-32 mx-auto">
                     <div className="bg-[#FAF8F5] border-[4px] border-black shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] md:shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] rounded-2xl md:rounded-3xl p-6 md:p-12 relative overflow-hidden group">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 md:gap-10 mb-10 relative z-10">
                             <div className="flex flex-col items-start gap-3 text-left">
