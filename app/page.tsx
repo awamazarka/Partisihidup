@@ -46,7 +46,7 @@ export default function Home() {
 
       <main className="flex-1 flex flex-col items-center pt-24 md:pt-32 relative z-10">
         {/* Hero Section */}
-        <section className="w-full max-w-5xl flex flex-col items-center text-center gap-6 md:gap-8 py-8 md:py-12 px-6">
+        <section className="w-full max-w-5xl flex flex-col items-center text-center gap-6 md:gap-8 pt-8 pb-24 md:py-12 px-10">
           <div className="inline-flex items-center gap-2 px-5 py-2 bg-[#A3E635] border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] text-black text-[10px] font-black tracking-widest uppercase rounded-full">
             <Sparkles className="w-4 h-4" />
             MARKETPLACE JUALAN DIECAST
@@ -71,7 +71,7 @@ export default function Home() {
             </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 md:gap-6 mt-8 md:mt-10 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 md:gap-6 mt-8 md:mt-10 w-full sm:w-auto relative z-20">
             <Link href="/login" className="bg-[#FFDE03] border-[4px] border-black px-10 md:px-12 py-4 md:py-5 font-black uppercase italic text-lg md:text-xl shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] text-black flex items-center justify-center gap-3">
               GET STARTED <ArrowRight className="w-6 h-6" />
             </Link>
@@ -82,12 +82,12 @@ export default function Home() {
         </section>
 
         {/* Brand Marquee - Yellow Bar */}
-        <div className="w-full py-6 md:py-10 bg-[#FFDE03] border-y-[4px] border-black mt-16 md:mt-24 transform -rotate-1 relative z-20 overflow-hidden">
+        <div className="w-full py-6 md:py-10 bg-[#FFDE03] border-y-[4px] border-black mt-8 md:mt-24 transform -rotate-1 relative z-20 overflow-hidden">
             <div className="flex animate-scroll gap-10 md:gap-24 items-center whitespace-nowrap px-10">
                 {[
-                    'MAJORETTE', 'AUTOART', 'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS',
-                    'MAJORETTE', 'AUTOART', 'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS',
-                    'MAJORETTE', 'AUTOART', 'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS'
+                    'INNO64', 'KAIDOHOUSE', 'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS',
+                    'INNO64', 'KAIDOHOUSE', 'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS',
+                    'INNO64', 'KAIDOHOUSE', 'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS'
                 ].map((brand, i) => (
                     <span key={i} className="text-2xl md:text-5xl font-black italic uppercase tracking-tighter text-black">
                         {brand}
@@ -97,8 +97,8 @@ export default function Home() {
         </div>
 
         {/* Section: Why Diecaster Santuy - Light Background */}
-        <section className="w-full bg-[#FAF8F5] border-t-[4px] border-black -mt-10 md:-mt-14 relative z-10">
-            <div className="w-full max-w-7xl mx-auto flex flex-col items-center pt-24 md:pt-32 pb-20 md:pb-24 px-6">
+        <section className="w-full bg-[#FAF8F5] border-t-[4px] border-black -mt-12 md:-mt-24 relative z-10 transform -rotate-1 scale-105">
+            <div className="w-full max-w-7xl mx-auto flex flex-col items-center pt-24 md:pt-48 pb-20 md:pb-24 px-12 md:px-6 transform rotate-1">
                 <div className="bg-black text-[#A3E635] px-4 py-1 border-[2px] border-black mb-4 shadow-[3px_3px_0px_0px_#FFDE03]">
                     <span className="font-black uppercase italic text-[10px] tracking-widest">WHY DIECASTER SANTUY?</span>
                 </div>

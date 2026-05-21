@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Box, ShoppingCart, Calculator, BarChart3, ReceiptText, Home, Menu, X, LogOut, Sparkles, UserCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { signOut } from '@/app/auth/actions';
@@ -23,10 +25,14 @@ const userItems = [
 ];
 
 export default function Navbar({ initialRole }: { initialRole: string | null }) {
+  const pathname = usePathname();
   const [role, setRole] = useState<string | null>(initialRole);
   const [username, setUsername] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  const isHomePage = pathname === '/';
+  const textColor = isScrolled ? 'text-black' : (isHomePage ? 'text-white' : 'text-black');
 
   const supabase = createClient();
 
@@ -101,35 +107,42 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
       >
         <div 
           className={`
-            bg-white/95 backdrop-blur-md border-black transition-all duration-500 ease-in-out flex items-center justify-between mx-auto
+            transition-all duration-500 ease-in-out flex items-center justify-between mx-auto
             ${isScrolled 
-              ? 'w-[94%] max-w-7xl border-[3px] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-xl md:rounded-2xl px-4 md:px-8 py-2.5 md:py-4' 
-              : 'w-full border-b-[4px] border-x-0 border-t-0 shadow-none rounded-none px-6 md:px-16 py-4 md:py-8'
+              ? 'w-[94%] max-w-7xl bg-white/95 backdrop-blur-md border-[2px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl md:rounded-2xl px-4 md:px-8 py-2 md:py-3' 
+              : 'w-full bg-transparent border-none shadow-none rounded-none px-6 md:px-16 py-4 md:py-8'
             }
           `}
         >
           {/* Logo Section */}
-          <Link href="/" className="flex items-center gap-2 md:gap-3 group shrink-0">
+          <Link href="/" className="flex items-center gap-2 md:gap-4 group shrink-0">
             <div className={`
-              bg-[#FFD600] border-black flex items-center justify-center transition-all duration-500
+              flex items-center justify-center transition-all duration-500
               ${isScrolled 
-                ? 'w-8 h-8 md:w-11 md:h-11 border-[2.5px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' 
-                : 'w-10 h-10 md:w-14 md:h-14 border-[3px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'
+                ? 'w-10 h-10 md:w-16 md:h-16' 
+                : 'w-16 h-16 md:w-32 md:h-32'
               }
             `}>
-              <span className={`font-black text-black italic transition-all ${isScrolled ? 'text-lg md:text-2xl' : 'text-2xl md:text-3xl'}`}>AB</span>
+              <Image 
+                src="/logodiecast.png" 
+                alt="AditBunta Logo" 
+                width={128} 
+                height={128} 
+                className="w-full h-full object-contain"
+              />
             </div>
             <div className="flex flex-col">
-              <span className={`font-black tracking-tighter uppercase italic text-black leading-none transition-all ${isScrolled ? 'text-base md:text-2xl' : 'text-xl md:text-3xl'}`}>
+              <span className={`font-black tracking-tighter uppercase italic leading-none transition-all ${textColor} ${isScrolled ? 'text-lg md:text-2xl' : 'text-2xl md:text-4xl'}`}>
                 Only Diecaster
               </span>
               {!isScrolled && (
-                <span className="hidden md:block font-bold text-[10px] uppercase tracking-widest text-[#FB923C] mt-1">
+                <span className={`hidden md:block font-bold text-[10px] uppercase tracking-widest mt-1 ${isHomePage ? 'text-[#FFD600]' : 'text-[#FB923C]'}`}>
                   Santuy & Premium
                 </span>
               )}
             </div>
           </Link>
+
           
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-1 xl:gap-2">
@@ -137,20 +150,20 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
               <Link
                 key={item.name}
                 href={item.href}
-                className="neo-brutal-nav-item text-[11px] xl:text-xs font-black uppercase italic flex items-center gap-1.5 text-black px-2.5 py-1.5 hover:bg-[#FFD600] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all whitespace-nowrap"
+                className={`neo-brutal-nav-item text-[11px] xl:text-xs font-black uppercase italic flex items-center gap-1.5 px-2.5 py-1.5 hover:bg-[#FFD600] hover:text-black hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all whitespace-nowrap ${textColor}`}
               >
                 <item.icon className="w-4 h-4" />
                 {item.name}
               </Link>
             ))}
             
-            <div className="h-6 w-[2px] bg-black mx-2 opacity-20" />
+            <div className={`h-6 w-[2px] mx-2 opacity-20 ${isScrolled || !isHomePage ? 'bg-black' : 'bg-white'}`} />
             
             {role ? (
                <div className="flex items-center gap-3">
                   <div className="flex flex-col items-end shrink-0 leading-tight">
-                      <span className="text-[7px] font-black uppercase italic text-[#FB923C]">Active</span>
-                      <span className="text-[10px] font-black uppercase italic text-black truncate max-w-[90px]">{username || 'User'}</span>
+                      <span className={`text-[7px] font-black uppercase italic ${isScrolled || !isHomePage ? 'text-[#FB923C]' : 'text-[#A3E635]'}`}>Active</span>
+                      <span className={`text-[10px] font-black uppercase italic truncate max-w-[90px] ${textColor}`}>{username || 'User'}</span>
                   </div>
                   <button onClick={handleLogout} className="bg-[#FB923C] border-[2px] border-black px-4 py-2 font-black text-[10px] uppercase shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1.5px] hover:translate-y-[1.5px] hover:shadow-none transition-all text-black whitespace-nowrap">
                      Logout
@@ -165,15 +178,9 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
 
           {/* Mobile Right Controls */}
           <div className="flex lg:hidden items-center gap-3">
-            {role && (
-                <div className="flex flex-col items-end leading-none">
-                    <span className="text-[6px] font-black uppercase text-[#FB923C]">User</span>
-                    <span className="text-[9px] font-black uppercase text-black truncate max-w-[60px]">{username}</span>
-                </div>
-            )}
             <button 
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="border-[2.5px] border-black p-2 bg-[#FFD600] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px] transition-all text-black"
+                className={`border-[2.5px] border-black p-2 bg-[#FFD600] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px] transition-all text-black`}
             >
                 {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>

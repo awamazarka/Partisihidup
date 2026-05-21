@@ -2,6 +2,7 @@
 
 import { Car, Send, Camera, Globe, Mail } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
 export default function Footer() {
@@ -51,14 +52,20 @@ export default function Footer() {
           </div>
         </div>
       </div>
-...
+
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand Section */}
           <div className="md:col-span-1 space-y-6">
             <Link href="/" className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#FFD600] border-[3px] border-black flex items-center justify-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <span className="font-black text-black text-2xl italic">AB</span>
+              <div className="w-12 h-12 flex items-center justify-center">
+                <Image 
+                  src="/logodiecast.png" 
+                  alt="AditBunta Logo" 
+                  width={48} 
+                  height={48} 
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="font-black text-xl tracking-tighter uppercase italic text-black">
                 Only Diecaster Santuy

@@ -211,8 +211,8 @@ export default function CollectionPage() {
             <Sparkles className="w-4 h-4 text-black" />
             <span className="text-[10px] font-black uppercase tracking-widest italic text-black">Master Showcase</span>
           </div>
-          <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter text-black leading-none">
-            The <span className="text-white drop-shadow-[4px_4px_0px_rgba(0,0,0,1)] [-webkit-text-stroke:2px_black]">Vault</span>
+          <h1 className="text-6xl md:text-6xl font-black uppercase italic tracking-tighter text-black leading-none">
+            My <span className="text-white drop-shadow-[4px_4px_0px_rgba(0,0,0,1)] [-webkit-text-stroke:2px_black]">Collections</span>
           </h1>
           <p className="text-black font-bold italic text-lg max-w-xl">
             A high-definition visual gallery of my personal diecast masterpieces.

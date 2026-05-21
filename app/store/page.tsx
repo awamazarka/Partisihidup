@@ -19,7 +19,23 @@ export default function StorePage() {
 
   useEffect(() => {
     fetchStoreItems();
-    setRole(localStorage.getItem('user-role'));
+    
+    // Initial check from localStorage for fast UI
+    const savedRole = localStorage.getItem('user-role');
+    if (savedRole) setRole(savedRole);
+
+    // Reliable check using Supabase Auth
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        // If logged in, ensure we have a role. Default to 'user' if not specified.
+        const currentRole = localStorage.getItem('user-role') || 'user';
+        setRole(currentRole);
+      } else {
+        setRole(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   async function fetchStoreItems() {
