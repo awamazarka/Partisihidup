@@ -122,12 +122,12 @@ export default function Footer() {
 
         <div className="mt-12 pt-8 border-t-[3px] border-black border-dashed flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="font-black uppercase italic text-xs text-black/60">
-            &copy; {currentYear} AditBunta. All rights reserved.
+            &copy; {currentYear} AditBunta. NO DRAMA, JUST DIECAST.
           </p>
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-[#A3E635] animate-pulse rounded-full border-[1px] border-black" />
             <span className="font-black uppercase italic text-[10px] tracking-widest text-black/40">
-              {role === 'admin' ? 'Admin Portal Online' : 'Collector Gateway Online'}
+              {role === 'admin' ? 'Admin Portal Online' : 'Collector Diecast Gateway'}
             </span>
           </div>
         </div>
