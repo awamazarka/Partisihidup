@@ -34,7 +34,7 @@ export default function DashboardPage() {
     totalOrders: 0,
     totalReviews: 0,
     recentActivity: [] as any[],
-    dailyActivity: [] as { date: string, count: number }[]
+    dailyActivity: [] as { date: string, count: number, fullDate: string }[]
   });
   const [systemHealth, setSystemHealth] = useState({
     dbStatus: 'Excellent',

@@ -36,7 +36,7 @@ export default function GamePage() {
   const [isSaving, setIsSaving] = useState(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const requestRef = useRef<number>();
+  const requestRef = useRef<number>(null as any);
   const gameStateRef = useRef(gameState);
   const supabase = createClient();
 
