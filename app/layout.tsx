@@ -18,6 +18,32 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AditBunta Diecaster | Inventory & Dashboard",
   description: "Modern inventory management & business intelligence for diecast collectors.",
+  icons: {
+    icon: "/logo_yellow.png",
+    apple: "/logo_yellow.png",
+  },
+  openGraph: {
+    title: "AditBunta Diecaster",
+    description: "Premium inventory management & marketplace for diecast collectors.",
+    url: "https://onlydiecast.vercel.app",
+    siteName: "Only Diecaster",
+    images: [
+      {
+        url: "/logo_yellow.png",
+        width: 800,
+        height: 800,
+        alt: "Only Diecaster Logo",
+      },
+    ],
+    locale: "id_ID",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AditBunta Diecaster",
+    description: "Premium inventory management & marketplace for diecast collectors.",
+    images: ["/logo_yellow.png"],
+  },
 };
 
 export default async function RootLayout({

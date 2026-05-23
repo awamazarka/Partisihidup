@@ -35,7 +35,8 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
   const [isGameActive, setIsGameActive] = useState(false);
 
   const isHomePage = pathname === '/';
-  const textColor = isScrolled ? 'text-black' : (isHomePage ? 'text-white' : 'text-black');
+  const isGamePage = pathname === '/game';
+  const textColor = isScrolled ? 'text-black' : ((isHomePage || isGamePage) ? 'text-white' : 'text-black');
 
   const supabase = createClient();
 
@@ -60,7 +61,14 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
     const getUser = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-            setUsername(session.user.email?.split('@')[0] || 'Member');
+            // Fetch username directly from profiles table
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('username')
+                .eq('id', session.user.id)
+                .single();
+            
+            setUsername(profile?.username || 'Member');
             if (!currentRole) setRole('user');
         } else if (currentRole === 'admin') {
             setUsername('Admin');
@@ -70,10 +78,16 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
     };
     getUser();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const updatedRole = getCookie('user-role');
       if (session?.user) {
-        setUsername(session.user.email?.split('@')[0] || 'Member');
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', session.user.id)
+            .single();
+            
+        setUsername(profile?.username || 'Member');
         setRole(updatedRole || 'user');
       } else if (updatedRole === 'admin') {
         setUsername('Admin');
