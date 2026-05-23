@@ -124,19 +124,19 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
           `}
         >
           {/* Logo Section */}
-          <Link href="/" className="flex items-center gap-2 md:gap-4 group shrink-0">
+          <Link href="/" className="flex items-center gap-3 md:gap-6 group shrink-0">
             <div className={`
               flex items-center justify-center transition-all duration-500
               ${isScrolled 
-                ? 'w-10 h-10 md:w-16 md:h-16' 
-                : 'w-16 h-16 md:w-32 md:h-32'
+                ? 'w-14 h-14 md:w-20 md:h-20' 
+                : 'w-20 h-20 md:w-44 md:h-44'
               }
             `}>
               <Image 
                 src="/logo_yellow.png" 
                 alt="AditBunta Logo" 
-                width={128} 
-                height={128} 
+                width={256} 
+                height={256} 
                 className="w-full h-full object-contain"
               />
             </div>

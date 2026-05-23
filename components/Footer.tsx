@@ -57,13 +57,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
           {/* Brand Section */}
           <div className="md:col-span-1 space-y-6">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="w-12 h-12 flex items-center justify-center">
+            <Link href="/" className="flex items-center gap-4">
+              <div className="w-20 h-20 md:w-32 md:h-32 flex items-center justify-center">
                 <Image 
                   src="/logo_yellow.png" 
                   alt="AditBunta Logo" 
-                  width={48} 
-                  height={48} 
+                  width={128} 
+                  height={128} 
                   className="w-full h-full object-contain"
                 />
               </div>
