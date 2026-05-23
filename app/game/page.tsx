@@ -452,25 +452,25 @@ export default function GamePage() {
                             ))}
                         </div>
 
-                        {/* Mobile Controls Overlay */}
-                        <div className="lg:hidden absolute inset-x-0 bottom-10 flex justify-between px-10 pointer-events-none">
+                        {/* Mobile Controls Overlay - Positioned in corners above the car level */}
+                        <div className="lg:hidden absolute inset-x-0 bottom-24 flex justify-between px-6 pointer-events-none">
                             <button 
                                 onTouchStart={(e) => { e.preventDefault(); keys.current['ArrowLeft'] = true; }}
                                 onTouchEnd={(e) => { e.preventDefault(); keys.current['ArrowLeft'] = false; }}
                                 onMouseDown={() => { keys.current['ArrowLeft'] = true; }}
                                 onMouseUp={() => { keys.current['ArrowLeft'] = false; }}
-                                className="w-20 h-20 bg-white/20 backdrop-blur-md border-[4px] border-white rounded-full flex items-center justify-center pointer-events-auto active:bg-[#FFD600] active:scale-95 transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.5)]"
+                                className="w-16 h-16 bg-white/10 backdrop-blur-md border-[3px] border-white/40 rounded-2xl flex items-center justify-center pointer-events-auto active:bg-[#FFD600] active:border-black active:scale-95 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)]"
                             >
-                                <ChevronRight className="w-10 h-10 text-white rotate-180" />
+                                <ChevronRight className="w-8 h-8 text-white rotate-180" />
                             </button>
                             <button 
                                 onTouchStart={(e) => { e.preventDefault(); keys.current['ArrowRight'] = true; }}
                                 onTouchEnd={(e) => { e.preventDefault(); keys.current['ArrowRight'] = false; }}
                                 onMouseDown={() => { keys.current['ArrowRight'] = true; }}
                                 onMouseUp={() => { keys.current['ArrowRight'] = false; }}
-                                className="w-20 h-20 bg-white/20 backdrop-blur-md border-[4px] border-white rounded-full flex items-center justify-center pointer-events-auto active:bg-[#FFD600] active:scale-95 transition-all shadow-[6px_6px_0px_0px_rgba(0,0,0,0.5)]"
+                                className="w-16 h-16 bg-white/10 backdrop-blur-md border-[3px] border-white/40 rounded-2xl flex items-center justify-center pointer-events-auto active:bg-[#FFD600] active:border-black active:scale-95 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.3)]"
                             >
-                                <ChevronRight className="w-10 h-10 text-white" />
+                                <ChevronRight className="w-8 h-8 text-white" />
                             </button>
                         </div>
                     </>
