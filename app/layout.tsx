@@ -16,11 +16,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://onlydiecast.vercel.app"),
   title: "AditBunta Diecaster | Inventory & Dashboard",
   description: "Modern inventory management & business intelligence for diecast collectors.",
   icons: {
-    icon: "/logo_yellow.png",
-    apple: "/logo_yellow.png",
+    icon: "/icon.png",
+    apple: "/apple-icon.png",
   },
   openGraph: {
     title: "AditBunta Diecaster",
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
     siteName: "Only Diecaster",
     images: [
       {
-        url: "/logo_yellow.png",
+        url: "/opengraph-image.png",
         width: 800,
         height: 800,
         alt: "Only Diecaster Logo",
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "AditBunta Diecaster",
     description: "Premium inventory management & marketplace for diecast collectors.",
-    images: ["/logo_yellow.png"],
+    images: ["/opengraph-image.png"],
   },
 };
 
