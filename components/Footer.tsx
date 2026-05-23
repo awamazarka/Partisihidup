@@ -60,7 +60,7 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-3">
               <div className="w-12 h-12 flex items-center justify-center">
                 <Image 
-                  src="/logodiecast.png" 
+                  src="/logo_yellow.png" 
                   alt="AditBunta Logo" 
                   width={48} 
                   height={48} 

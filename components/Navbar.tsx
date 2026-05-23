@@ -133,7 +133,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
               }
             `}>
               <Image 
-                src="/logodiecast.png" 
+                src="/logo_yellow.png" 
                 alt="AditBunta Logo" 
                 width={128} 
                 height={128} 
