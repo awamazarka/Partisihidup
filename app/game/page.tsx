@@ -370,26 +370,26 @@ export default function GamePage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         
         {/* Game Area */}
-        <div className="lg:col-span-2 flex flex-col items-center">
-            <div className="w-full flex justify-between items-end mb-6">
-                <div>
-                    <h1 className="text-5xl font-black uppercase italic text-white tracking-tighter leading-none">JDM <br /> <span className="text-[#FFD600]">OUTRUN.</span></h1>
+        <div className="lg:col-span-2 flex flex-col items-center w-full">
+            <div className="w-full flex flex-col sm:flex-row justify-between items-center sm:items-end gap-4 mb-6 px-2">
+                <div className="text-center sm:text-left">
+                    <h1 className="text-3xl sm:text-5xl font-black uppercase italic text-white tracking-tighter leading-none">JDM <br className="hidden sm:block" /> <span className="text-[#FFD600]">OUTRUN.</span></h1>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex gap-2 sm:gap-4 w-full sm:w-auto justify-center">
                     <button 
                         onClick={() => setIsMuted(!isMuted)}
-                        className="bg-black border-[3px] border-white p-3 shadow-[4px_4px_0_0_white] text-white hover:bg-zinc-800 transition-colors"
+                        className="bg-black border-[2px] sm:border-[3px] border-white p-2 sm:p-3 shadow-[3px_3px_0px_0px_white] sm:shadow-[4px_4px_0px_0px_white] text-white hover:bg-zinc-800 transition-colors"
                         title={isMuted ? "Unmute" : "Mute"}
                     >
-                        {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                        {isMuted ? <VolumeX className="w-4 h-4 sm:w-6 sm:h-6" /> : <Volume2 className="w-4 h-4 sm:w-6 sm:h-6" />}
                     </button>
-                    <div className="bg-black border-[3px] border-[#A3E635] p-3 shadow-[4px_4px_0_0_#A3E635]">
-                        <p className="text-[10px] font-black uppercase text-[#A3E635] opacity-60">Score</p>
-                        <p className="text-xl font-black text-white italic">{score.toLocaleString()}</p>
+                    <div className="flex-1 sm:flex-none bg-black border-[2px] sm:border-[3px] border-[#A3E635] p-2 sm:p-3 shadow-[3px_3px_0px_0px_#A3E635] sm:shadow-[4px_4px_0px_0px_#A3E635] min-w-[80px] text-center sm:text-left">
+                        <p className="text-[8px] sm:text-[10px] font-black uppercase text-[#A3E635] opacity-60">Score</p>
+                        <p className="text-base sm:text-xl font-black text-white italic leading-none">{score.toLocaleString()}</p>
                     </div>
-                    <div className="bg-black border-[3px] border-[#FB923C] p-3 shadow-[4px_4px_0_0_#FB923C]">
-                        <p className="text-[10px] font-black uppercase text-[#FB923C] opacity-60">Level</p>
-                        <p className="text-xl font-black text-white italic">{level}</p>
+                    <div className="flex-1 sm:flex-none bg-black border-[2px] sm:border-[3px] border-[#FB923C] p-2 sm:p-3 shadow-[3px_3px_0px_0px_#FB923C] sm:shadow-[4px_4px_0px_0px_#FB923C] min-w-[80px] text-center sm:text-left">
+                        <p className="text-[8px] sm:text-[10px] font-black uppercase text-[#FB923C] opacity-60">Level</p>
+                        <p className="text-base sm:text-xl font-black text-white italic leading-none">{level}</p>
                     </div>
                 </div>
             </div>
