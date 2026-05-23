@@ -79,7 +79,7 @@ export async function signup(formData: FormData) {
         username: username,
         full_name: fullName
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://partisihidup.vercel.app'}/auth/callback`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://onlydiecast.vercel.app'}/auth/callback`,
     },
   })
 
