@@ -7,9 +7,11 @@ import { createClient } from '@/utils/supabase/client';
 
 export default function Home() {
   const [featuredItems, setFeaturedItems] = useState<any[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
+    setIsMounted(true);
     async function fetchFeatured() {
       const { data } = await supabase
         .from('car_collection')
@@ -25,58 +27,81 @@ export default function Home() {
   return (
     <div className="relative min-h-screen flex flex-col bg-zinc-950 overflow-hidden text-white selection:bg-[#FFD600] selection:text-black font-sans">
       
-      {/* Background Image Grid */}
-      <div className="absolute inset-0 z-0 opacity-10">
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-0 grayscale brightness-50 contrast-125">
-           {[
-             'https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1542282088-fe8426682b8f?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=800&auto=format&fit=crop',
-             'https://images.unsplash.com/photo-1553440569-bcc63803a83d?q=80&w=800&auto=format&fit=crop',
-           ].map((url, idx) => (
-             <div key={idx} className="aspect-[4/3] relative overflow-hidden border-[0.5px] border-zinc-800">
-                <img src={url} alt="Bkg" className="w-full h-full object-cover" />
-             </div>
-           ))}
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-zinc-950/80 to-zinc-950" />
-      </div>
+      <main className="flex-1 flex flex-col items-center pt-24 md:pt-32 relative z-10 w-full">
+        {/* Hero Section with Contained JDM Background & Rainy Night Effects */}
+        <section className="w-[95%] max-w-6xl flex flex-col items-center text-center gap-5 md:gap-8 pt-12 pb-24 md:py-24 px-6 md:px-10 relative overflow-hidden bg-black mx-auto rounded-2xl md:rounded-3xl group mb-10 shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] md:shadow-[20px_20px_0px_0px_rgba(0,0,0,1)] cursor-default">
+          
+          {/* Background Image Layer */}
+          <div className="absolute inset-0 z-0">
+            <img 
+              src="/JDM silhouette.png" 
+              alt="JDM Background" 
+              className="w-full h-full object-cover opacity-70 scale-100 group-hover:scale-110 group-hover:opacity-90 transition-all duration-1000 ease-in-out"
+            />
+            {/* Dark inner shadow for seamless blend within the black box */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-black/60" />
+          </div>
 
-      <main className="flex-1 flex flex-col items-center pt-24 md:pt-32 relative z-10">
-        {/* Hero Section */}
-        <section className="w-full max-w-5xl flex flex-col items-center text-center gap-6 md:gap-8 pt-8 pb-24 md:py-12 px-10">
-          <div className="inline-flex items-center gap-2 px-5 py-2 bg-[#A3E635] border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)] text-black text-[10px] font-black tracking-widest uppercase rounded-full">
-            <Sparkles className="w-4 h-4" />
+          {/* Intensified Rain Layer */}
+          <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+            {isMounted && [...Array(60)].map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute w-[1px] md:w-[2px] h-20 md:h-32 bg-white/40 animate-rain" 
+                style={{
+                  left: `${Math.random() * 100}%`,
+                  top: `-${Math.random() * 100}%`,
+                  animationDelay: `${Math.random() * 2}s`,
+                  animationDuration: `${0.6 + Math.random() * 0.4}s`,
+                  filter: 'blur(0.5px)'
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Neon Light Streaks (Motion Blur) */}
+          <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden">
+            {isMounted && [...Array(12)].map((_, i) => (
+              <div 
+                key={i} 
+                className="absolute h-[2px] w-[400px] animate-neon-streak group-hover:h-[3px] group-hover:w-[600px] group-hover:brightness-150 transition-all duration-500 blur-[1px]" 
+                style={{
+                  top: `${10 + Math.random() * 80}%`,
+                  backgroundColor: i % 3 === 0 ? '#00FFFF' : i % 3 === 1 ? '#FF007A' : '#FFDE03',
+                  boxShadow: `0 0 25px ${i % 3 === 0 ? '#00FFFF' : i % 3 === 1 ? '#FF007A' : '#FFDE03'}`,
+                  animationDelay: `${Math.random() * 4}s`,
+                  animationDuration: `${1.2 + Math.random() * 1.5}s`
+                }}
+              />
+            ))}
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-4 md:px-5 py-1.5 md:py-2 bg-[#A3E635] border-[2px] md:border-[3px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-black text-[9px] md:text-[10px] font-black tracking-widest uppercase rounded-full relative z-30">
+            <Sparkles className="w-3.5 h-3.5 md:w-4 md:h-4" />
             MARKETPLACE JUALAN DIECAST
           </div>
           
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter leading-[0.85] uppercase italic text-white drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-black tracking-tighter leading-[0.9] md:leading-[0.85] uppercase italic text-white drop-shadow-[0_4px_10px_rgba(0,0,0,1)] md:drop-shadow-[0_8px_25px_rgba(0,0,0,1)] relative z-30">
             BUILD YOUR OWN <br />
-            <span className="bg-[#FFDE03] px-5 py-1 border-[4px] border-black shadow-[10px_10px_0px_0px_rgba(163,230,53,1)] text-black inline-block transform -rotate-1 my-3">EMPIRE</span> <br />
+            <span className="bg-[#FFDE03] px-3 md:px-5 py-1 border-[3px] md:border-[4px] border-black shadow-[6px_6px_0px_0px_rgba(163,230,53,1)] md:shadow-[10px_10px_0px_0px_rgba(163,230,53,1)] text-black inline-block transform -rotate-1 my-2 md:my-3">EMPIRE</span> <br />
             OF DIECAST.
           </h1>
           
-          <div className="flex flex-col items-center gap-4 mt-4 md:mt-6">
-            <div className="bg-[#A3E635] border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] p-4 md:p-5 transform -rotate-1">
-              <p className="text-sm sm:text-base md:text-lg text-black font-bold italic leading-relaxed">
+          <div className="flex flex-col items-center gap-4 mt-2 md:mt-6 relative z-30 px-2">
+            <div className="bg-[#A3E635] border-[3px] md:border-[4px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-3 md:p-5 transform -rotate-1">
+              <p className="text-xs sm:text-base md:text-lg text-black font-bold italic leading-tight md:leading-relaxed">
                 Marketplace jualan diecast & miniscale Only Diecaster Santuy
-              </p>
-            </div>
-            <div className="bg-[#FF007A] border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] p-4 md:p-5 transform rotate-1">
-              <p className="text-sm sm:text-base md:text-lg text-white font-bold italic leading-relaxed">
-                Next generation diecast management for true collectors.
               </p>
             </div>
           </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 md:gap-6 mt-8 md:mt-10 w-full sm:w-auto relative z-20">
-            <Link href="/login" className="bg-[#FFDE03] border-[4px] border-black px-10 md:px-12 py-4 md:py-5 font-black uppercase italic text-lg md:text-xl shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] text-black flex items-center justify-center gap-3">
-              GET STARTED <ArrowRight className="w-6 h-6" />
+          <div className="flex flex-col sm:flex-row gap-4 mt-8 md:mt-10 w-full sm:w-auto relative z-30 px-4 md:px-0">
+            <Link href="/login" className="bg-[#FFDE03] border-[3px] md:border-[4px] border-black px-8 md:px-12 py-3.5 md:py-5 font-black uppercase italic text-base md:text-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] text-black flex items-center justify-center gap-3">
+              GET STARTED <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
             </Link>
-            <Link href="/collection" className="bg-white border-[4px] border-black px-10 md:px-12 py-4 md:py-5 font-black uppercase italic text-lg md:text-xl shadow-[8px_8px_0px_0px_rgba(255,255,255,0.1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] text-black flex items-center justify-center gap-3">
-              SHOWCASE <ArrowUpRight className="w-6 h-6" />
+            <Link href="/collection" className="bg-white border-[3px] md:border-[4px] border-black px-8 md:px-12 py-3.5 md:py-5 font-black uppercase italic text-base md:text-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] text-black flex items-center justify-center gap-3">
+              SHOWCASE <ArrowUpRight className="w-5 h-5 md:w-6 md:h-6" />
             </Link>
           </div>
         </section>

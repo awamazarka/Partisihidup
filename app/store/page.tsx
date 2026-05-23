@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Tag, Heart, ShoppingCart, Loader2, X, MessageCircle, QrCode, ArrowRight, Info, ImageIcon } from 'lucide-react';
+import { ShoppingBag, Search, Tag, Heart, ShoppingCart, Loader2, X, MessageCircle, QrCode, ArrowRight, Info, ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 
@@ -10,12 +10,19 @@ export default function StorePage() {
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState('All');
+  const [sortBy, setSortBy] = useState('newest');
   const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [checkoutStep, setCheckoutStep] = useState<'details' | 'payment'>('details');
+  const [checkoutStep, setCheckoutStep] = useState<'details' | 'payment' | 'reviews'>('details');
   const [role, setRole] = useState<string | null>(null);
   const [activeImg, setActiveImg] = useState(0);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [userReview, setUserReview] = useState({ rating: 5, comment: '' });
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const supabase = createClient();
+
+  const brands = ['All', ...Array.from(new Set(items.map(item => item.brand)))].sort();
 
   useEffect(() => {
     fetchStoreItems();
@@ -27,7 +34,6 @@ export default function StorePage() {
     // Reliable check using Supabase Auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
-        // If logged in, ensure we have a role. Default to 'user' if not specified.
         const currentRole = localStorage.getItem('user-role') || 'user';
         setRole(currentRole);
       } else {
@@ -37,6 +43,45 @@ export default function StorePage() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (selectedItem) {
+        fetchReviews(selectedItem.id);
+    }
+  }, [selectedItem]);
+
+  async function fetchReviews(itemId: string) {
+    const { data, error } = await supabase
+        .from('reviews')
+        .select('*, profiles(username)')
+        .eq('item_id', itemId)
+        .order('created_at', { ascending: false });
+    
+    if (data) setReviews(data);
+  }
+
+  async function submitReview() {
+    if (!userReview.comment.trim()) return;
+    setIsSubmittingReview(true);
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return alert("Please login to review!");
+
+    const { error } = await supabase.from('reviews').insert({
+        item_id: selectedItem.id,
+        user_id: user.id,
+        rating: userReview.rating,
+        comment: userReview.comment
+    });
+
+    if (!error) {
+        setUserReview({ rating: 5, comment: '' });
+        fetchReviews(selectedItem.id);
+    } else {
+        alert(error.message);
+    }
+    setIsSubmittingReview(false);
+  }
 
   async function fetchStoreItems() {
     setLoading(true);
@@ -50,7 +95,7 @@ export default function StorePage() {
       // Normalize images into array
       const normalizedData = data.map(item => ({
         ...item,
-        displayImages: Array.isArray(item.images) ? item.images : (item.image_url ? [item.image_url] : [])
+        displayImages: Array.isArray(item.images) && item.images.length > 0 ? item.images : (item.image_url ? [item.image_url] : [])
       }));
       setItems(normalizedData);
       setFilteredItems(normalizedData);
@@ -59,13 +104,40 @@ export default function StorePage() {
   }
 
   useEffect(() => {
-    const filtered = items.filter(item => 
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.scale && item.scale.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-    setFilteredItems(filtered);
-  }, [searchQuery, items]);
+    let result = [...items];
+
+    // Filter by Search Query
+    if (searchQuery) {
+      result = result.filter(item => 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.scale && item.scale.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+    }
+
+    // Filter by Brand
+    if (selectedBrand !== 'All') {
+      result = result.filter(item => item.brand === selectedBrand);
+    }
+
+    // Sort Logic
+    switch (sortBy) {
+      case 'price-low':
+        result.sort((a, b) => a.sell_price - b.sell_price);
+        break;
+      case 'price-high':
+        result.sort((a, b) => b.sell_price - a.sell_price);
+        break;
+      case 'newest':
+        result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+      case 'oldest':
+        result.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+    }
+
+    setFilteredItems(result);
+  }, [searchQuery, selectedBrand, sortBy, items]);
 
   const formatIDR = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -91,8 +163,8 @@ export default function StorePage() {
           <p className="text-black font-bold italic text-sm md:text-base">Cek koleksi pilihan kita dan lengkapin isi garasimu sekarang!</p>
         </div>
         
-        <div className="flex items-center gap-3 w-full lg:w-auto">
-          <div className="relative flex-1 lg:w-64">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
             <input 
               type="text" 
@@ -101,6 +173,29 @@ export default function StorePage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-3 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-sm outline-none text-black"
             />
+          </div>
+
+          <div className="flex gap-2 w-full sm:w-auto">
+            <select 
+              value={selectedBrand}
+              onChange={(e) => setSelectedBrand(e.target.value)}
+              className="flex-1 sm:w-40 px-4 py-3 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-xs uppercase outline-none appearance-none cursor-pointer"
+            >
+              {brands.map(brand => (
+                <option key={brand} value={brand}>{brand}</option>
+              ))}
+            </select>
+
+            <select 
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="flex-1 sm:w-48 px-4 py-3 bg-[#FFD600] border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-xs uppercase outline-none appearance-none cursor-pointer"
+            >
+              <option value="newest">Terbaru</option>
+              <option value="oldest">Terlama</option>
+              <option value="price-low">Harga Terendah</option>
+              <option value="price-high">Harga Tertinggi</option>
+            </select>
           </div>
         </div>
       </div>
@@ -161,34 +256,61 @@ export default function StorePage() {
       {selectedItem && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/50 backdrop-blur-md">
               <div className="bg-white border-[4px] border-black shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] w-full max-w-5xl rounded-3xl overflow-hidden relative flex flex-col md:flex-row max-h-[90vh]">
-                  <button onClick={() => {setSelectedItem(null); setCheckoutStep('details');}} className="absolute top-6 right-6 z-10 p-1 border-[3px] border-black bg-[#FB923C] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
+                  <button onClick={() => {setSelectedItem(null); setCheckoutStep('details');}} className="absolute top-6 right-6 z-50 p-1 border-[3px] border-black bg-[#FB923C] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
                       <X className="w-6 h-6 text-black" />
                   </button>
 
                   {/* Image Column */}
                   <div className="md:w-1/2 bg-[#FAF8F5] border-r-[4px] border-black flex flex-col max-h-full">
-                      <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
+                      <div className="flex-1 flex items-center justify-center p-8 overflow-hidden relative group">
+                          {/* Navigation Arrows */}
+                          {selectedItem.displayImages.length > 1 && (
+                              <>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); setActiveImg(prev => (prev > 0 ? prev - 1 : selectedItem.displayImages.length - 1)); }}
+                                    className="absolute left-10 z-10 bg-white border-[3px] border-black p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all active:scale-95"
+                                >
+                                    <ChevronLeft className="w-6 h-6 text-black" />
+                                </button>
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); setActiveImg(prev => (prev < selectedItem.displayImages.length - 1 ? prev + 1 : 0)); }}
+                                    className="absolute right-10 z-10 bg-white border-[3px] border-black p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all active:scale-95"
+                                >
+                                    <ChevronRight className="w-6 h-6 text-black" />
+                                </button>
+                              </>
+                          )}
+
                           <div className="w-full aspect-square border-[4px] border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden relative">
                               {selectedItem.displayImages.length > 0 ? (
-                                  <img src={selectedItem.displayImages[activeImg]} className="w-full h-full object-cover" alt={selectedItem.name} />
+                                  <img 
+                                    src={selectedItem.displayImages[activeImg]} 
+                                    className="w-full h-full object-cover" 
+                                    alt={selectedItem.name} 
+                                  />
                               ) : (
                                   <div className="w-full h-full flex items-center justify-center opacity-20"><ShoppingBag className="w-32 h-32" /></div>
                               )}
-                              {selectedItem.displayImages.length > 1 && (
-                                <div className="absolute bottom-4 right-4 bg-black text-[#FFD600] px-2 py-1 font-black text-[10px] border-[2px] border-[#FFD600]">
-                                    {activeImg + 1} / {selectedItem.displayImages.length}
-                                </div>
-                              )}
+                              
+                              <div className="absolute top-4 left-4 flex gap-2">
+                                  {selectedItem.displayImages.map((_: any, i: number) => (
+                                      <div key={i} className={`h-1.5 w-6 border-[1px] border-black ${activeImg === i ? 'bg-[#FFD600]' : 'bg-white/40'}`} />
+                                  ))}
+                              </div>
+
+                              <div className="absolute bottom-4 right-4 bg-black text-[#FFD600] px-3 py-1 font-black text-[12px] border-[2px] border-[#FFD600] italic">
+                                  {selectedItem.brand}
+                              </div>
                           </div>
                       </div>
                       
                       {selectedItem.displayImages.length > 1 && (
-                        <div className="flex gap-2 p-4 border-t-[3px] border-black overflow-x-auto bg-white custom-scrollbar">
+                        <div className="flex gap-2 p-6 border-t-[4px] border-black overflow-x-auto bg-white custom-scrollbar">
                             {selectedItem.displayImages.map((img: string, idx: number) => (
                                 <button 
                                     key={idx} 
                                     onClick={() => setActiveImg(idx)}
-                                    className={`w-16 h-16 border-[3px] border-black shrink-0 transition-all ${activeImg === idx ? 'shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]' : 'opacity-40'}`}
+                                    className={`w-20 h-20 border-[3px] border-black shrink-0 transition-all ${activeImg === idx ? 'shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] scale-105' : 'opacity-30 grayscale hover:opacity-100 hover:grayscale-0'}`}
                                 >
                                     <img src={img} className="w-full h-full object-cover" />
                                 </button>
@@ -198,8 +320,16 @@ export default function StorePage() {
                   </div>
 
                   {/* Info Column */}
-                  <div className="md:w-1/2 p-10 flex flex-col bg-white overflow-y-auto custom-scrollbar">
-                      {checkoutStep === 'details' ? (
+                  <div className="md:w-1/2 flex flex-col bg-white overflow-y-auto custom-scrollbar">
+                      {/* Modal Nav Tabs */}
+                      <div className="flex border-b-[4px] border-black sticky top-0 bg-white z-20 md:pr-20">
+                          <button onClick={() => setCheckoutStep('details')} className={`flex-1 py-4 font-black uppercase italic text-xs transition-colors ${checkoutStep === 'details' ? 'bg-[#FFD600]' : 'hover:bg-zinc-50'}`}>Details</button>
+                          <button onClick={() => setCheckoutStep('reviews')} className={`flex-1 py-4 font-black uppercase italic text-xs border-x-[3px] border-black transition-colors ${checkoutStep === 'reviews' ? 'bg-[#A3E635]' : 'hover:bg-zinc-50'}`}>Reviews ({reviews.length})</button>
+                          <button onClick={() => setCheckoutStep('payment')} className={`flex-1 py-4 font-black uppercase italic text-xs transition-colors ${checkoutStep === 'payment' ? 'bg-[#FB923C]' : 'hover:bg-zinc-50'}`}>Purchase</button>
+                      </div>
+
+                      <div className="p-10 flex-1 flex flex-col">
+                      {checkoutStep === 'details' && (
                           <>
                             <div className="mb-8">
                                 <div className="inline-block bg-[#FFD600] border-[2px] border-black px-3 py-1 font-black text-xs uppercase italic shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] mb-4">
@@ -238,50 +368,162 @@ export default function StorePage() {
                                 )}
                             </div>
                           </>
-                      ) : (
+                      )}
+
+                      {checkoutStep === 'reviews' && (
+                          <div className="space-y-8">
+                              <h2 className="text-3xl font-black uppercase italic underline text-black">Customer Reviews</h2>
+                              
+                              {/* Submit Review Form */}
+                              {role ? (
+                                <div className="bg-[#FAF8F5] border-[3px] border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                                    <label className="block text-[10px] font-black uppercase italic mb-3">Leave a rating & comment</label>
+                                    <div className="flex gap-2 mb-4">
+                                        {[1,2,3,4,5].map(star => (
+                                            <button 
+                                                key={star} 
+                                                onClick={() => setUserReview({...userReview, rating: star})}
+                                                className={`w-8 h-8 border-[2px] border-black flex items-center justify-center transition-all ${userReview.rating >= star ? 'bg-[#FFD600] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'bg-white opacity-40'}`}
+                                            >
+                                                <Heart className={`w-4 h-4 ${userReview.rating >= star ? 'fill-black' : ''}`} />
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <textarea 
+                                        value={userReview.comment}
+                                        onChange={e => setUserReview({...userReview, comment: e.target.value})}
+                                        placeholder="What do you think about this unit?"
+                                        className="w-full border-[2px] border-black p-3 font-bold text-xs bg-white outline-none mb-4 focus:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all resize-none"
+                                        rows={3}
+                                    />
+                                    <button 
+                                        onClick={submitReview}
+                                        disabled={isSubmittingReview || !userReview.comment.trim()}
+                                        className="bg-[#A3E635] border-[3px] border-black px-6 py-2 font-black uppercase italic text-xs shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1.5px] hover:translate-y-[1.5px] hover:shadow-none transition-all flex items-center gap-2 disabled:opacity-30"
+                                    >
+                                        {isSubmittingReview ? <Loader2 className="w-3 h-3 animate-spin" /> : <MessageCircle className="w-3 h-3" />}
+                                        POST REVIEW
+                                    </button>
+                                </div>
+                              ) : (
+                                <Link href="/login" className="block p-4 border-[2px] border-black border-dashed text-center font-black uppercase italic text-xs opacity-60 hover:opacity-100 transition-opacity">
+                                    Login to leave a review
+                                </Link>
+                              )}
+
+                              {/* Review List */}
+                              <div className="space-y-4">
+                                  {reviews.length > 0 ? reviews.map((rev, idx) => (
+                                      <div key={idx} className="border-l-[4px] border-black pl-6 py-2">
+                                          <div className="flex items-center gap-3 mb-2">
+                                              <span className="font-black uppercase italic text-[10px] text-[#FB923C]">@{rev.profiles?.username || 'Member'}</span>
+                                              <div className="flex gap-1">
+                                                  {[...Array(rev.rating)].map((_, i) => <Heart key={i} className="w-2.5 h-2.5 fill-black" />)}
+                                              </div>
+                                          </div>
+                                          <p className="font-bold text-sm text-zinc-600 leading-relaxed italic">"{rev.comment}"</p>
+                                          <span className="block text-[8px] font-bold opacity-30 mt-2">{new Date(rev.created_at).toLocaleDateString()}</span>
+                                      </div>
+                                  )) : (
+                                      <p className="text-center py-10 font-black uppercase italic text-black/20">No reviews yet. Be the first!</p>
+                                  )}
+                              </div>
+                          </div>
+                      )}
+
+                      {checkoutStep === 'payment' && (
                           <>
-                            <h2 className="text-3xl font-black uppercase italic mb-8 underline text-black">Payment Methods</h2>
+                            <h2 className="text-3xl font-black uppercase italic mb-8 underline text-black">Checkout Options</h2>
                             
-                            <div className="space-y-6">
+                            <div className="space-y-4">
+                                {/* Marketplace Links Section */}
+                                {selectedItem.marketplace_links && Object.values(selectedItem.marketplace_links).some(v => v) && (
+                                    <div className="grid grid-cols-1 gap-3 mb-4">
+                                        {selectedItem.marketplace_links.tokopedia && (
+                                            <a href={selectedItem.marketplace_links.tokopedia} target="_blank" className="bg-[#42b549] border-[3px] border-black p-4 flex items-center justify-between shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all group">
+                                                <span className="font-black text-white italic">TOKOPEDIA</span>
+                                                <ArrowRight className="w-5 h-5 text-white" />
+                                            </a>
+                                        )}
+                                        {selectedItem.marketplace_links.shopee && (
+                                            <a href={selectedItem.marketplace_links.shopee} target="_blank" className="bg-[#ee4d2d] border-[3px] border-black p-4 flex items-center justify-between shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all group">
+                                                <span className="font-black text-white italic">SHOPEE</span>
+                                                <ArrowRight className="w-5 h-5 text-white" />
+                                            </a>
+                                        )}
+                                        {selectedItem.marketplace_links.tiktok && (
+                                            <a href={selectedItem.marketplace_links.tiktok} target="_blank" className="bg-black border-[3px] border-black p-4 flex items-center justify-between shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all group">
+                                                <span className="font-black text-white italic">TIKTOK SHOP</span>
+                                                <ArrowRight className="w-5 h-5 text-white" />
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+
                                 <button 
                                     onClick={() => openWhatsApp(selectedItem)}
-                                    className="w-full bg-[#25D366] border-[3px] border-black p-6 flex items-center gap-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all group"
+                                    className="w-full bg-[#25D366] border-[3px] border-black p-5 flex items-center gap-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all group"
                                 >
-                                    <div className="p-3 bg-white border-[2px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                                        <MessageCircle className="w-8 h-8 text-[#25D366]" />
-                                    </div>
+                                    <MessageCircle className="w-6 h-6 text-white" />
                                     <div className="text-left">
-                                        <span className="block font-black uppercase text-xl italic text-black">DIRECT WHATSAPP</span>
-                                        <span className="text-[10px] font-bold uppercase text-black opacity-70">Order via +62 813-8515-7755</span>
+                                        <span className="block font-black uppercase text-base italic text-white leading-none">ORDER VIA WHATSAPP</span>
+                                        <span className="text-[8px] font-bold uppercase text-white/70">Directly connect with AditBunta</span>
                                     </div>
                                 </button>
 
-                                <div className="w-full bg-white border-[3px] border-black p-6 flex flex-col items-center gap-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                                <div className="w-full bg-white border-[3px] border-black p-5 flex flex-col items-center gap-4 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
                                     <div className="flex items-center gap-4 w-full">
-                                        <div className="p-3 bg-[#FFD600] border-[2px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
-                                            <QrCode className="w-8 h-8 text-black" />
-                                        </div>
+                                        <QrCode className="w-6 h-6 text-black" />
                                         <div className="text-left">
-                                            <span className="block font-black uppercase text-xl italic text-black">QRIS / BANK TRANSFER</span>
-                                            <span className="text-[10px] font-bold uppercase text-black opacity-70">Scan & Pay securely</span>
+                                            <span className="block font-black uppercase text-base italic text-black leading-none">QRIS / TRANSFER</span>
+                                            <span className="text-[8px] font-bold uppercase text-black opacity-40">Scan & Pay securely</span>
                                         </div>
                                     </div>
-                                    
-                                    <div className="w-48 h-48 border-[3px] border-black bg-[#FAF8F5] flex items-center justify-center relative group">
-                                        <div className="text-xs font-black uppercase italic opacity-20 text-center p-4">QR CODE PLACEHOLDER</div>
-                                        <div className="absolute inset-0 border-4 border-dashed border-black/10 m-2" />
+                                    <div className="w-32 h-32 border-[2px] border-black bg-[#FAF8F5] flex items-center justify-center relative group">
+                                        <div className="text-[8px] font-black uppercase italic opacity-20 text-center p-2">QR CODE</div>
                                     </div>
                                 </div>
                             </div>
 
                             <button 
                                 onClick={() => setCheckoutStep('details')}
-                                className="mt-8 text-black font-black uppercase italic underline text-sm hover:text-[#FB923C] transition-colors"
+                                className="mt-8 text-black font-black uppercase italic underline text-xs hover:text-[#FB923C] transition-colors"
                             >
                                 ← BACK TO DETAILS
                             </button>
                           </>
                       )}
+
+                      {/* Suggestions Section */}
+                      {selectedItem && (
+                          <div className="mt-12 pt-10 border-t-[3px] border-black border-dashed">
+                              <h3 className="text-xl font-black uppercase italic mb-6 text-black">Mungkin kamu juga akan suka</h3>
+                              <div className="grid grid-cols-2 gap-4">
+                                  {items
+                                      .filter(item => item.id !== selectedItem.id && (item.brand === selectedItem.brand || item.scale === selectedItem.scale))
+                                      .slice(0, 4)
+                                      .map((suggested) => (
+                                          <div 
+                                              key={suggested.id} 
+                                              onClick={() => {setSelectedItem(suggested); setActiveImg(0); setCheckoutStep('details');}}
+                                              className="border-[3px] border-black p-2 bg-[#FAF8F5] hover:bg-[#FFD600] transition-colors cursor-pointer group"
+                                          >
+                                              <div className="aspect-square border-[2px] border-black bg-white mb-2 overflow-hidden">
+                                                  <img 
+                                                      src={suggested.displayImages[0]} 
+                                                      alt={suggested.name}
+                                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                                  />
+                                              </div>
+                                              <p className="font-black text-[10px] uppercase italic truncate text-black leading-tight">{suggested.name}</p>
+                                              <p className="font-bold text-[9px] text-[#FB923C] italic">{formatIDR(suggested.sell_price)}</p>
+                                          </div>
+                                      ))
+                                  }
+                              </div>
+                          </div>
+                      )}
+                      </div>
                   </div>
               </div>
           </div>

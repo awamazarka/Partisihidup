@@ -68,11 +68,11 @@ export default function Footer() {
                 />
               </div>
               <span className="font-black text-xl tracking-tighter uppercase italic text-black">
-                Only Diecaster Santuy
+                Only Diecaster
               </span>
             </Link>
             <p className="text-black font-bold italic max-w-sm leading-relaxed">
-              Premium inventory management and business intelligence for the modern diecast collector. Built for speed, styled for impact.
+              Tempat kumpulnya kolektor diecast buat pantau stok dan cari barang incaran dengan gampang. Santuy, rapi, dan makin asik koleksinya!
             </p>
             <div className="flex gap-4">
               <SocialBtn icon={<Camera className="w-5 h-5" />} href="#" />

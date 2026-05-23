@@ -27,7 +27,14 @@ export default function InventoryPage() {
     buy_price: 0,
     sell_price: 0,
     stock: 0,
-    image_url: ''
+    image_url: '',
+    images: [] as string[],
+    description: '',
+    marketplace_links: {
+        tokopedia: '',
+        shopee: '',
+        tiktok: ''
+    }
   });
 
   const [bulkData, setBulkData] = useState("");
@@ -46,8 +53,12 @@ export default function InventoryPage() {
       .order('created_at', { ascending: false });
     
     if (data) {
-      setItems(data);
-      setFilteredItems(data);
+      const normalizedData = data.map(item => ({
+        ...item,
+        images: Array.isArray(item.images) ? item.images : (item.image_url ? [item.image_url] : [])
+      }));
+      setItems(normalizedData);
+      setFilteredItems(normalizedData);
     }
     setLoading(false);
   }
@@ -64,43 +75,79 @@ export default function InventoryPage() {
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     try {
-      setUploading(true);
       if (!e.target.files || e.target.files.length === 0) return;
+      setUploading(true);
       
-      const file = e.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const newImages = [...formData.images];
+      
+      for (let i = 0; i < e.target.files.length; i++) {
+        const file = e.target.files[i];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `${fileName}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('inventory')
-        .upload(filePath, file);
+        const { error: uploadError } = await supabase.storage
+          .from('inventory')
+          .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+        if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('inventory')
-        .getPublicUrl(filePath);
+        const { data: { publicUrl } } = supabase.storage
+          .from('inventory')
+          .getPublicUrl(filePath);
+          
+        newImages.push(publicUrl);
+      }
 
-      setFormData({ ...formData, image_url: publicUrl });
+      setFormData({ 
+        ...formData, 
+        images: newImages,
+        image_url: newImages[0] // Set first image as primary for legacy support
+      });
     } catch (error) {
-      alert('Error uploading image!');
+      alert('Error uploading images!');
     } finally {
       setUploading(false);
     }
   }
 
+  const removeImage = (index: number) => {
+    const newImages = formData.images.filter((_, i) => i !== index);
+    setFormData({ 
+        ...formData, 
+        images: newImages,
+        image_url: newImages[0] || '' 
+    });
+  };
+
+  const generateAIDescription = (name: string, brand: string, scale: string, condition: string) => {
+      return `Koleksi premium ${brand} ${name} skala ${scale} dengan kondisi ${condition}. Item dikurasi khusus untuk kolektor yang menghargai detail dan kualitas. Sangat layak masuk ke dalam barisan display utama di garasi Anda.`;
+  };
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    
+    let finalDescription = formData.description;
+    if (!finalDescription.trim()) {
+        finalDescription = generateAIDescription(formData.name, formData.brand, formData.scale, formData.condition);
+    }
+
+    const submitData = {
+        ...formData,
+        description: finalDescription,
+        // Sync first image to legacy field
+        image_url: formData.images[0] || ''
+    };
+
     if (editingId) {
-        const { error } = await supabase.from('inventory').update(formData).eq('id', editingId);
+        const { error } = await supabase.from('inventory').update(submitData).eq('id', editingId);
         if (!error) {
             setEditingId(null);
             closeModal();
             fetchInventory();
         } else alert(error.message);
     } else {
-        const { error } = await supabase.from('inventory').insert([formData]);
+        const { error } = await supabase.from('inventory').insert([submitData]);
         if (!error) {
             closeModal();
             fetchInventory();
@@ -111,7 +158,11 @@ export default function InventoryPage() {
   function closeModal() {
       setIsModalOpen(false);
       setEditingId(null);
-      setFormData({ name: '', brand: 'Hot Wheels', scale: '1:64', condition: 'Mint in Sealed Box', color: '', buy_price: 0, sell_price: 0, stock: 0, image_url: '' });
+      setFormData({ 
+        name: '', brand: 'Hot Wheels', scale: '1:64', condition: 'Mint in Sealed Box', color: '', 
+        buy_price: 0, sell_price: 0, stock: 0, image_url: '', images: [], description: '',
+        marketplace_links: { tokopedia: '', shopee: '', tiktok: '' }
+      });
   }
 
   function handleEdit(item: any) {
@@ -125,7 +176,10 @@ export default function InventoryPage() {
           buy_price: item.buy_price,
           sell_price: item.sell_price,
           stock: item.stock,
-          image_url: item.image_url || ''
+          image_url: item.image_url || '',
+          images: Array.isArray(item.images) ? item.images : (item.image_url ? [item.image_url] : []),
+          description: item.description || '',
+          marketplace_links: item.marketplace_links || { tokopedia: '', shopee: '', tiktok: '' }
       });
       setIsModalOpen(true);
   }
@@ -280,9 +334,9 @@ export default function InventoryPage() {
 
       {/* Manual Add/Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-white/20 backdrop-blur-md">
-          <div className="bg-white border-[4px] border-black shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] w-full max-w-xl rounded-3xl p-10 relative max-h-[90vh] overflow-y-auto">
-            <button onClick={closeModal} className="absolute top-8 right-8 p-1 border-[3px] border-black bg-[#FB923C] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/50 backdrop-blur-md">
+          <div className="bg-white border-[4px] border-black shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] w-full max-w-2xl rounded-3xl p-10 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <button onClick={closeModal} className="absolute top-8 right-8 p-1 border-[3px] border-black bg-[#FB923C] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
               <X className="w-6 h-6 text-black" />
             </button>
             
@@ -290,24 +344,34 @@ export default function InventoryPage() {
                 {editingId ? 'Edit Asset' : 'Add New Asset'}
             </h2>
             
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-black uppercase italic underline text-black">Image Upload</label>
-                <div className="h-44 w-full border-[3px] border-black bg-[#FAF8F5] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex items-center justify-center relative overflow-hidden group">
-                  {formData.image_url ? (
-                    <img src={formData.image_url} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="flex flex-col items-center gap-3">
-                      <ImageIcon className="w-10 h-10 text-black" />
-                      <span className="text-xs font-black uppercase italic text-black">Click to Upload</span>
-                    </div>
-                  )}
-                  <input type="file" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer" disabled={uploading} />
-                  {uploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center"><Loader2 className="w-10 h-10 text-[#FFD600] animate-spin" /></div>}
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* Image Section */}
+              <div className="space-y-4">
+                <label className="text-xs font-black uppercase italic underline text-black">Product Photos (Multi-Upload)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {formData.images.map((img, idx) => (
+                        <div key={idx} className="aspect-square border-[3px] border-black bg-[#FAF8F5] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative group overflow-hidden">
+                            <img src={img} className="w-full h-full object-cover" />
+                            <button 
+                                type="button"
+                                onClick={() => removeImage(idx)}
+                                className="absolute top-1 right-1 bg-[#FF007A] border-[2px] border-black p-1 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <X className="w-3 h-3 text-white" />
+                            </button>
+                        </div>
+                    ))}
+                    <label className="aspect-square border-[3px] border-black border-dashed bg-[#FAF8F5] hover:bg-[#A3E635] transition-colors flex flex-col items-center justify-center cursor-pointer gap-1 group">
+                        <ImageIcon className="w-8 h-8 text-black/20 group-hover:scale-110 transition-transform" />
+                        <span className="text-[8px] font-black uppercase text-black/40">Add Photo</span>
+                        <input type="file" multiple onChange={handleFileUpload} className="hidden" disabled={uploading} />
+                        {uploading && <div className="absolute inset-0 bg-white/60 flex items-center justify-center"><Loader2 className="w-6 h-6 text-black animate-spin" /></div>}
+                    </label>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-6">
+              {/* Basic Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex flex-col gap-1">
                       <label className="text-[10px] font-black uppercase italic text-black">Item Name</label>
                       <input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="border-[3px] border-black p-3 font-bold bg-[#FAF8F5] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none transition-all outline-none text-black" />
@@ -318,23 +382,51 @@ export default function InventoryPage() {
                   </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-6">
+              {/* Specs */}
+              <div className="grid grid-cols-3 gap-4">
                   <SelectField label="Brand" value={formData.brand} options={BRANDS} onChange={v => setFormData({...formData, brand: v})} />
                   <SelectField label="Scale" value={formData.scale} options={SCALES} onChange={v => setFormData({...formData, scale: v})} />
                   <SelectField label="Condition" value={formData.condition} options={CONDITIONS} onChange={v => setFormData({...formData, condition: v})} />
               </div>
 
-              <div className="grid grid-cols-3 gap-6">
+              {/* Description Section */}
+              <div className="flex flex-col gap-1">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[10px] font-black uppercase italic text-black">Item Description</label>
+                    <span className="text-[8px] font-bold italic text-[#FB923C] opacity-60">*Auto-AI if left blank</span>
+                  </div>
+                  <textarea 
+                    value={formData.description} 
+                    onChange={e => setFormData({...formData, description: e.target.value})} 
+                    placeholder="Describe your asset..."
+                    rows={4}
+                    className="border-[3px] border-black p-4 font-bold bg-[#FAF8F5] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-none transition-all outline-none text-black text-sm resize-none"
+                  />
+              </div>
+
+              {/* Pricing & Stock */}
+              <div className="grid grid-cols-3 gap-4">
                 <InputGroup label="Buy (IDR)" value={formData.buy_price} onChange={v => setFormData({...formData, buy_price: v})} />
                 <InputGroup label="Sell (IDR)" value={formData.sell_price} onChange={v => setFormData({...formData, sell_price: v})} />
                 <InputGroup label="Qty" value={formData.stock} onChange={v => setFormData({...formData, stock: v})} />
               </div>
 
+              {/* Marketplace Links */}
+              <div className="bg-[#FAF8F5] border-[3px] border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] space-y-4">
+                  <label className="text-[10px] font-black uppercase italic underline text-black">Marketplace Options (External URLs)</label>
+                  <div className="space-y-3">
+                      <MarketLinkInput label="Tokopedia" value={formData.marketplace_links.tokopedia} onChange={v => setFormData({...formData, marketplace_links: {...formData.marketplace_links, tokopedia: v}})} color="bg-emerald-50" />
+                      <MarketLinkInput label="Shopee" value={formData.marketplace_links.shopee} onChange={v => setFormData({...formData, marketplace_links: {...formData.marketplace_links, shopee: v}})} color="bg-orange-50" />
+                      <MarketLinkInput label="TikTok Shop" value={formData.marketplace_links.tiktok} onChange={v => setFormData({...formData, marketplace_links: {...formData.marketplace_links, tiktok: v}})} color="bg-zinc-50" />
+                  </div>
+              </div>
+
               <button 
                 type="submit" 
                 disabled={uploading}
-                className="neo-brutal-btn-mint w-full text-xl mt-4"
+                className="neo-brutal-btn-mint w-full text-xl mt-4 flex items-center justify-center gap-3"
               >
+                {uploading ? <Loader2 className="animate-spin" /> : <Save />}
                 {editingId ? 'UPDATE ASSET' : 'SAVE ASSET'}
               </button>
             </form>
@@ -392,6 +484,21 @@ function SelectField({ label, value, options, onChange }: { label: string, value
             >
                 {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
             </select>
+        </div>
+    )
+}
+
+function MarketLinkInput({ label, value, onChange, color }: { label: string, value: string, onChange: (v: string) => void, color: string }) {
+    return (
+        <div className={`flex flex-col gap-1 p-3 border-[2px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${color}`}>
+            <label className="text-[8px] font-black uppercase italic text-black/60">{label} Link</label>
+            <input 
+                type="url" 
+                value={value} 
+                onChange={e => onChange(e.target.value)} 
+                placeholder={`https://${label.toLowerCase()}.com/...`}
+                className="bg-transparent border-none font-bold text-xs outline-none text-black placeholder:text-black/20" 
+            />
         </div>
     )
 }

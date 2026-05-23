@@ -12,40 +12,39 @@ export async function login(formData: FormData) {
   const identity = (formData.get('identity') as string).trim()
   const password = formData.get('password') as string
 
-  let email = identity
+  console.log(`--- Login Attempt ---`);
+  console.log(`Identity provided: "${identity}"`);
 
-  // If identity doesn't look like an email, assume it's a username
-  if (!identity.includes('@')) {
-    const supabaseAdmin = createAdminClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    )
+  // 1. Resolve Identity to Email via 'profiles' table
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('email, role, username')
+    .or(`email.eq.${identity},username.eq.${identity}`)
+    .single()
 
-    // Find user with this username in metadata
-    const { data: users, error: fetchError } = await supabaseAdmin.auth.admin.listUsers()
-    
-    if (!fetchError && users) {
-      const userMatch = users.users.find(u => u.user_metadata?.username?.toLowerCase() === identity.toLowerCase())
-      if (userMatch && userMatch.email) {
-        email = userMatch.email
-      }
-    }
+  if (profileError || !profile) {
+    console.warn(`No profile found for identity: "${identity}"`);
+    return redirect('/login?error=' + encodeURIComponent('Account not found. Please check your username or email.'))
   }
 
-  // Handle Supabase Auth login using the resolved email
+  const emailToSignIn = profile.email
+  console.log(`Identity resolved to email: "${emailToSignIn}" (Role: ${profile.role})`);
+
+  // 2. Final Auth Attempt with Supabase Auth
   const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
+    email: emailToSignIn,
+    password: password,
   })
 
   if (error) {
+    console.log(`Sign-in failed for "${emailToSignIn}": ${error.message}`);
     return redirect('/login?error=' + encodeURIComponent(error.message))
   }
 
-  // Determine role based on user metadata
-  const user = data.user
-  const isAdmin = user?.user_metadata?.username === 'admin'
-  const role = isAdmin ? 'admin' : 'user'
+  console.log(`Sign-in successful for: ${data.user.email}`);
+
+  // 3. Determine role from Profiles table
+  const role = profile.role || 'user'
 
   const cookieStore = await cookies()
   cookieStore.set('user-role', role, {
@@ -57,7 +56,7 @@ export async function login(formData: FormData) {
   
   revalidatePath('/', 'layout')
   
-  if (isAdmin) {
+  if (role === 'admin') {
     redirect('/dashboard')
   } else {
     redirect('/store')
@@ -67,11 +66,10 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
   const supabase = await createClient()
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
   const email = formData.get('email') as string
   const password = formData.get('password') as string
   const username = formData.get('username') as string
+  const fullName = formData.get('full_name') as string || ''
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -79,6 +77,7 @@ export async function signup(formData: FormData) {
     options: {
       data: {
         username: username,
+        full_name: fullName
       },
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://partisihidup.vercel.app'}/auth/callback`,
     },
@@ -88,6 +87,7 @@ export async function signup(formData: FormData) {
     return redirect('/login?error=' + encodeURIComponent(error.message))
   }
 
+  // Profile will be created automatically via database trigger (SQL provided in instructions)
   revalidatePath('/', 'layout')
   redirect('/login?message=Check your email to confirm your account')
 }

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Box, ShoppingCart, Calculator, BarChart3, ReceiptText, Home, Menu, X, LogOut, Sparkles, UserCircle } from 'lucide-react';
+import { LayoutDashboard, Box, ShoppingCart, Calculator, BarChart3, ReceiptText, Home, Menu, X, LogOut, Sparkles, UserCircle, Gamepad2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { signOut } from '@/app/auth/actions';
 import { createClient } from '@/utils/supabase/client';
@@ -13,6 +13,7 @@ const adminItems = [
   { name: 'Inv', href: '/inventory', icon: Box },
   { name: 'Vault', href: '/collection', icon: Sparkles },
   { name: 'Store', href: '/store', icon: ShoppingCart },
+  { name: 'Game', href: '/game', icon: Gamepad2 },
   { name: 'Profit', href: '/profit', icon: Calculator },
   { name: 'Orders', href: '/orders', icon: ReceiptText },
   { name: 'Stats', href: '/analytics', icon: BarChart3 },
@@ -22,6 +23,7 @@ const userItems = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Vault', href: '/collection', icon: Sparkles },
   { name: 'Store', href: '/store', icon: ShoppingCart },
+  { name: 'Game', href: '/game', icon: Gamepad2 },
 ];
 
 export default function Navbar({ initialRole }: { initialRole: string | null }) {
@@ -30,6 +32,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
   const [username, setUsername] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isGameActive, setIsGameActive] = useState(false);
 
   const isHomePage = pathname === '/';
   const textColor = isScrolled ? 'text-black' : (isHomePage ? 'text-white' : 'text-black');
@@ -37,6 +40,10 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
   const supabase = createClient();
 
   useEffect(() => {
+    // Listen for game activity to hide navbar
+    const handleGameActive = (e: any) => setIsGameActive(e.detail);
+    window.addEventListener('game-active', handleGameActive);
+
     const getCookie = (name: string): string | null => {
       if (typeof document === 'undefined') return null;
       const value = `; ${document.cookie}`;
@@ -85,6 +92,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
     handleScroll();
     return () => {
         window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('game-active', handleGameActive);
         subscription.unsubscribe();
     };
   }, [initialRole, supabase.auth]);
@@ -103,6 +111,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
         className={`
           fixed z-[100] top-0 left-0 w-full transition-all duration-500 ease-in-out
           ${isScrolled ? 'pt-3 md:pt-6' : 'pt-0'}
+          ${isGameActive ? 'opacity-0 pointer-events-none' : 'opacity-100'}
         `}
       >
         <div 
