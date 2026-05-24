@@ -250,8 +250,8 @@ export default function GamePage() {
   };
 
   const updatePhysics = () => {
-    // Move Player - Responsive steering for ultra-high speeds
-    const playerSpeed = 6 + (level * 1.5);
+    // Move Player - INSANE steering for light-speed obstacles
+    const playerSpeed = 8 + (level * 2.5);
     if (keys.current['ArrowLeft'] && playerPos.current.x > 10) playerPos.current.x -= playerSpeed;
     if (keys.current['ArrowRight'] && playerPos.current.x < CANVAS_WIDTH - CAR_WIDTH - 10) playerPos.current.x += playerSpeed;
 
@@ -265,9 +265,9 @@ export default function GamePage() {
       });
     }
 
-    // Move Obstacles - Hardcore speed increase (3.5 per level)
+    // Move Obstacles - INSANE speed increase (10.0 per level)
     obstacles.current.forEach((obs, index) => {
-      obs.y += 4 + (level * 3.5);
+      obs.y += 4 + (level * 10.0);
       
       // Collision Detection
       if (
@@ -292,9 +292,9 @@ export default function GamePage() {
       }
     });
 
-    // Level Up Logic
+    // Level Up Logic - Now every 300 points
     setScore(currentScore => {
-        const nextLevelScore = level * 500;
+        const nextLevelScore = level * 300;
         if (currentScore >= nextLevelScore && currentScore > lastLevelUp.current) {
             setLevel(prev => prev + 1);
             lastLevelUp.current = currentScore;
