@@ -250,8 +250,8 @@ export default function GamePage() {
   };
 
   const updatePhysics = () => {
-    // Move Player - Slightly faster steering at high levels to keep up with speed
-    const playerSpeed = 5 + (level * 0.8);
+    // Move Player - Responsive steering for ultra-high speeds
+    const playerSpeed = 6 + (level * 1.5);
     if (keys.current['ArrowLeft'] && playerPos.current.x > 10) playerPos.current.x -= playerSpeed;
     if (keys.current['ArrowRight'] && playerPos.current.x < CANVAS_WIDTH - CAR_WIDTH - 10) playerPos.current.x += playerSpeed;
 
@@ -265,9 +265,9 @@ export default function GamePage() {
       });
     }
 
-    // Move Obstacles - Extreme speed increase (2.3 per level)
+    // Move Obstacles - Hardcore speed increase (3.5 per level)
     obstacles.current.forEach((obs, index) => {
-      obs.y += 4 + (level * 2.3);
+      obs.y += 4 + (level * 3.5);
       
       // Collision Detection
       if (
