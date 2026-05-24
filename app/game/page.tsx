@@ -265,9 +265,10 @@ export default function GamePage() {
       });
     }
 
-    // Move Obstacles
+    // Move Obstacles - Speed increases more aggressively with levels
     obstacles.current.forEach((obs, index) => {
-      obs.y += 4 + (level * 0.8);
+      // Base speed 4, plus 1.2 per level (was 0.8)
+      obs.y += 4 + (level * 1.2);
       
       // Collision Detection
       if (

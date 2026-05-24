@@ -71,6 +71,10 @@ export async function signup(formData: FormData) {
   const username = formData.get('username') as string
   const fullName = formData.get('full_name') as string || ''
 
+  // Determine the correct redirect URL based on environment
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+                  (process.env.NODE_ENV === 'production' ? 'https://onlydiecast.vercel.app' : 'http://localhost:3000');
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -79,7 +83,7 @@ export async function signup(formData: FormData) {
         username: username,
         full_name: fullName
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://onlydiecast.vercel.app'}/auth/callback`,
+      emailRedirectTo: `${siteUrl}/auth/callback`,
     },
   })
 
