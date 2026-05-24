@@ -53,6 +53,7 @@ export default function GamePage() {
   const playerPos = useRef({ x: CANVAS_WIDTH / 2 - CAR_WIDTH / 2, y: CANVAS_HEIGHT - 120 });
   const obstacles = useRef<any[]>([]);
   const keys = useRef<{ [key: string]: boolean }>({});
+  const carVariationCount = 4; // Number of procedural car colors available
 
   useEffect(() => {
     // Initialize Audio
@@ -165,7 +166,7 @@ export default function GamePage() {
       obstacles.current.push({
         x: Math.random() * (CANVAS_WIDTH - CAR_WIDTH - 40) + 20,
         y: -CAR_HEIGHT,
-        imgIndex: Math.floor(Math.random() * carImages.current.length),
+        imgIndex: Math.floor(Math.random() * carVariationCount),
         scored: false
       });
     }
