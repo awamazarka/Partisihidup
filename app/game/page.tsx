@@ -231,8 +231,9 @@ export default function GamePage() {
     setLevel(1);
     setLives(3);
     obstacles.current = [];
+    keys.current = {}; // Reset pressed keys
     playerPos.current = { x: CANVAS_WIDTH / 2 - CAR_WIDTH / 2, y: CANVAS_HEIGHT - 100 };
-    lastLevelUp.current = 0;
+    
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
     requestRef.current = requestAnimationFrame(gameLoop);
   };
@@ -250,13 +251,17 @@ export default function GamePage() {
   };
 
   const updatePhysics = () => {
-    // Move Player - INSANE steering for light-speed obstacles
-    const playerSpeed = 8 + (level * 2.5);
+    // Calculate Speed based strictly on current level
+    const baseSpeed = 4;
+    const currentSpeed = baseSpeed * Math.pow(3, level - 1);
+    const playerSpeed = 6 + (level * 2);
+
+    // Move Player
     if (keys.current['ArrowLeft'] && playerPos.current.x > 10) playerPos.current.x -= playerSpeed;
     if (keys.current['ArrowRight'] && playerPos.current.x < CANVAS_WIDTH - CAR_WIDTH - 10) playerPos.current.x += playerSpeed;
 
-    // Spawn Obstacles
-    if (Math.random() < 0.02 + (level * 0.005)) {
+    // Spawn Obstacles (spawn rate increases slightly with level)
+    if (Math.random() < 0.02 + (level * 0.01)) {
       obstacles.current.push({
         x: Math.random() * (CANVAS_WIDTH - CAR_WIDTH - 20) + 10,
         y: -CAR_HEIGHT,
@@ -265,9 +270,10 @@ export default function GamePage() {
       });
     }
 
-    // Move Obstacles - INSANE speed increase (10.0 per level)
+    // Move Obstacles & Handle Logic
     obstacles.current.forEach((obs, index) => {
-      obs.y += 4 + (level * 10.0);
+      // Apply exact current speed
+      obs.y += currentSpeed;
       
       // Collision Detection
       if (
@@ -280,26 +286,23 @@ export default function GamePage() {
         handleHit();
       }
 
-      // Score logic - item must be passed the player y to count
+      // Score Logic
       if (!obs.scored && obs.y > playerPos.current.y + CAR_HEIGHT) {
           obs.scored = true;
-          setScore(prev => prev + 10);
+          setScore(prevScore => {
+              const newScore = prevScore + 10;
+              // Check Level Transition exactly at 300 multiples
+              if (newScore > 0 && newScore % 300 === 0) {
+                  setLevel(prevLevel => prevLevel + 1);
+              }
+              return newScore;
+          });
       }
 
       // Cleanup
       if (obs.y > CANVAS_HEIGHT) {
         obstacles.current.splice(index, 1);
       }
-    });
-
-    // Level Up Logic - Now every 300 points
-    setScore(currentScore => {
-        const nextLevelScore = level * 300;
-        if (currentScore >= nextLevelScore && currentScore > lastLevelUp.current) {
-            setLevel(prev => prev + 1);
-            lastLevelUp.current = currentScore;
-        }
-        return currentScore;
     });
   };
 
