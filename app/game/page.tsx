@@ -259,55 +259,103 @@ export default function GamePage() {
 
   const draw = (ctx: CanvasRenderingContext2D) => {
     // 1. Asphalt Background
-    ctx.fillStyle = '#333333'; 
+    ctx.fillStyle = '#1a1a1a'; 
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     
-    // 2. Grainy Texture
-    ctx.fillStyle = '#ffffff05';
-    for(let i=0; i<500; i++) {
-        ctx.fillRect(Math.random()*CANVAS_WIDTH, Math.random()*CANVAS_HEIGHT, 1, 1);
+    // 2. Asphalt Texture (Static Noise)
+    ctx.fillStyle = '#ffffff03';
+    for(let i=0; i<300; i++) {
+        // Use fixed seeds for noise if possible, but random here is fine for "buzz"
+        ctx.fillRect((i * 13) % CANVAS_WIDTH, (i * 17) % CANVAS_HEIGHT, 2, 2);
     }
 
-    // 3. Side Curbs (Circuit Style - Red/White)
-    const curbWidth = 15;
-    const stripeHeight = 40;
-    const offset = (Date.now() / 10 * (gameLevelRef.current)) % (stripeHeight * 2);
+    // 3. Side Curbs (Circuit Style)
+    const curbWidth = 12;
+    const stripeHeight = 60;
+    const offset = (Date.now() / 5 * (gameLevelRef.current)) % (stripeHeight * 2);
 
     for(let y = -stripeHeight * 2; y < CANVAS_HEIGHT + stripeHeight; y += stripeHeight) {
-        ctx.fillStyle = (Math.floor((y + offset) / stripeHeight) % 2 === 0) ? '#ffffff' : '#ff0000';
+        ctx.fillStyle = (Math.floor((y + offset) / stripeHeight) % 2 === 0) ? '#ff3e3e' : '#eeeeee';
         ctx.fillRect(0, y + offset, curbWidth, stripeHeight);
         ctx.fillRect(CANVAS_WIDTH - curbWidth, y + offset, curbWidth, stripeHeight);
     }
 
-    // 4. Center Lines
-    ctx.strokeStyle = '#ffffff40';
-    ctx.setLineDash([30, 30]);
-    ctx.lineDashOffset = -Date.now() / 5 * (gameLevelRef.current);
+    // 4. Moving Center Lines
+    ctx.strokeStyle = '#ffffff30';
+    ctx.setLineDash([40, 40]);
+    ctx.lineDashOffset = -Date.now() / 2 * (gameLevelRef.current);
     ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.moveTo(CANVAS_WIDTH / 2, 0); ctx.lineTo(CANVAS_WIDTH / 2, CANVAS_HEIGHT);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // 5. Draw Obstacles (Cars)
-    obstacles.current.forEach(obs => {
-      const img = carImages.current[obs.imgIndex];
-      if (img && img.complete) {
-          ctx.drawImage(img, obs.x, obs.y, CAR_WIDTH, CAR_HEIGHT);
-      } else {
-          ctx.fillStyle = '#ff0000';
-          ctx.fillRect(obs.x, obs.y, CAR_WIDTH, CAR_HEIGHT);
-      }
-    });
+    // 5. Draw Player (Detailed Procedural Car)
+    drawDetailedCar(ctx, playerPos.current.x, playerPos.current.y, '#FFDE03', true);
 
-    // 6. Draw Player (Car)
-    const pImg = playerImg.current;
-    if (pImg && pImg.complete) {
-        ctx.drawImage(pImg, playerPos.current.x, playerPos.current.y, CAR_WIDTH, CAR_HEIGHT);
+    // 6. Draw Obstacles (Detailed Procedural Cars)
+    obstacles.current.forEach(obs => {
+      const colors = ['#ff4b2b', '#1e90ff', '#2ecc71', '#a29bfe'];
+      drawDetailedCar(ctx, obs.x, obs.y, colors[obs.imgIndex % colors.length], false);
+    });
+  };
+
+  // Helper to draw a top-down car without external images
+  const drawDetailedCar = (ctx: CanvasRenderingContext2D, x: number, y: number, color: string, isPlayer: boolean) => {
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(4, 4, CAR_WIDTH, CAR_HEIGHT);
+
+    // 1. Wheels (4 black rounded rects)
+    ctx.fillStyle = '#111';
+    const wheelW = 8;
+    const wheelH = 15;
+    ctx.fillRect(-2, 10, wheelW, wheelH); // Front Left
+    ctx.fillRect(CAR_WIDTH - wheelW + 2, 10, wheelW, wheelH); // Front Right
+    ctx.fillRect(-2, CAR_HEIGHT - 25, wheelW, wheelH); // Rear Left
+    ctx.fillRect(CAR_WIDTH - wheelW + 2, CAR_HEIGHT - 25, wheelW, wheelH); // Rear Right
+
+    // 2. Main Chassis
+    ctx.fillStyle = color;
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    // Rounded Chassis
+    ctx.beginPath();
+    ctx.roundRect(0, 0, CAR_WIDTH, CAR_HEIGHT, 8);
+    ctx.fill();
+    ctx.stroke();
+
+    // 3. Roof & Windows
+    ctx.fillStyle = '#222'; // Dark Glass
+    ctx.beginPath();
+    ctx.roundRect(5, 15, CAR_WIDTH - 10, 35, 5);
+    ctx.fill();
+
+    // 4. Windshield Detail
+    ctx.fillStyle = '#444';
+    ctx.fillRect(8, 18, CAR_WIDTH - 16, 12); // Front window
+
+    // 5. Lights
+    if (isPlayer) {
+        // Headlights (Yellow/White)
+        ctx.fillStyle = '#fff9c4';
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#fff9c4';
+        ctx.beginPath();
+        ctx.arc(8, 5, 4, 0, Math.PI * 2);
+        ctx.arc(CAR_WIDTH - 8, 5, 4, 0, Math.PI * 2);
+        ctx.fill();
     } else {
-        ctx.fillStyle = '#FFDE03';
-        ctx.fillRect(playerPos.current.x, playerPos.current.y, CAR_WIDTH, CAR_HEIGHT);
+        // Brake Lights (Red)
+        ctx.fillStyle = '#ff1744';
+        ctx.fillRect(5, CAR_HEIGHT - 4, 8, 3);
+        ctx.fillRect(CAR_WIDTH - 13, CAR_HEIGHT - 4, 8, 3);
     }
+
+    ctx.restore();
   };
 
   if (loading) return <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-white">Loading...</div>;
