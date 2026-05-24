@@ -35,7 +35,6 @@ export default function GamePage() {
   const [loading, setLoading] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [assetsLoaded, setAssetsLoaded] = useState(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const requestRef = useRef<number>(null as any);
@@ -45,10 +44,6 @@ export default function GamePage() {
   const bgMusic = useRef<HTMLAudioElement | null>(null);
   const sfxHit = useRef<HTMLAudioElement | null>(null);
   const sfxGameOver = useRef<HTMLAudioElement | null>(null);
-
-  // Asset Refs
-  const playerImg = useRef<HTMLImageElement | null>(null);
-  const carImages = useRef<HTMLImageElement[]>([]);
 
   // Engine Refs
   const gameScoreRef = useRef(0);
@@ -66,37 +61,6 @@ export default function GamePage() {
     bgMusic.current.volume = 0.3;
     sfxHit.current = new Audio('https://www.myinstants.com/media/sounds/boom.mp3');
     sfxGameOver.current = new Audio('https://www.myinstants.com/media/sounds/gta-v-wasted.mp3');
-
-    // Load Assets with Promises to ensure they are ready
-    const loadImg = (url: string): Promise<HTMLImageElement> => {
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.onload = () => resolve(img);
-            img.onerror = (e) => reject(e);
-            img.src = url;
-        });
-    };
-
-    async function loadAllAssets() {
-        try {
-            // Highly reliable top-down car assets (Wikimedia/Standard CDNs)
-            const player = await loadImg('https://raw.githubusercontent.com/subidit/Top-down-Car-Racing-Game/master/img/car_yellow.png');
-            playerImg.current = player;
-
-            const enemies = await Promise.all([
-                loadImg('https://raw.githubusercontent.com/subidit/Top-down-Car-Racing-Game/master/img/car_red.png'),
-                loadImg('https://raw.githubusercontent.com/subidit/Top-down-Car-Racing-Game/master/img/car_blue.png'),
-                loadImg('https://raw.githubusercontent.com/subidit/Top-down-Car-Racing-Game/master/img/car_green.png')
-            ]);
-            carImages.current = enemies;
-            setAssetsLoaded(true);
-        } catch (err) {
-            console.error("Asset loading failed, using vector fallbacks:", err);
-            setAssetsLoaded(true); // Continue with fallbacks
-        }
-    }
-    loadAllAssets();
 
     async function init() {
       const { data: { session } } = await supabase.auth.getSession();
