@@ -39,6 +39,11 @@ body {
     @apply font-bold border-2 border-transparent px-3 py-1 rounded-lg text-black hover:border-black hover:bg-[#FFD600] transition-all;
   }
 
+  /* Glassmorphism utility */
+  .glass-effect {
+    @apply backdrop-blur-md bg-white/70 border border-white/20 shadow-xl;
+  }
+
   /* --- ANIMATIONS --- */
 
   @keyframes rain {

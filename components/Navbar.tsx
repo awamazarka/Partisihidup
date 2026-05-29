@@ -136,7 +136,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
           className={`
             transition-all duration-500 ease-in-out flex items-center justify-between mx-auto pointer-events-none
             ${isScrolled 
-              ? 'w-[94%] max-w-7xl bg-white/95 backdrop-blur-md border-[2px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl md:rounded-2xl px-4 md:px-8 py-2 md:py-3' 
+              ? 'w-[94%] max-w-7xl glass-effect border-[2px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl md:rounded-2xl px-4 md:px-8 py-2 md:py-3' 
               : 'w-full bg-transparent border-none shadow-none rounded-none px-6 md:px-16 py-4 md:py-8'
             }
           `}
@@ -216,7 +216,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
 
         {/* Mobile Menu Dropdown - FULLY OPTIMIZED */}
         <div className={`
-          lg:hidden absolute top-full left-1/2 -translate-x-1/2 w-[94%] mt-3 bg-white border-[3px] border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] rounded-2xl overflow-hidden transition-all duration-500 transform origin-top pointer-events-auto
+          lg:hidden absolute top-full left-1/2 -translate-x-1/2 w-[94%] mt-3 glass-effect border-[3px] border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] rounded-2xl overflow-hidden transition-all duration-500 transform origin-top pointer-events-auto
           ${isMenuOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-10 scale-95 !pointer-events-none'}
         `}>
           <div className="max-h-[80vh] overflow-y-auto p-4 flex flex-col gap-2">
