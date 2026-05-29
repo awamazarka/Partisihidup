@@ -10,8 +10,6 @@ import {
 import { createClient } from '@/utils/supabase/client';
 import Link from 'next/link';
 
-const BRANDS = ["All Brands", "Hot Wheels", "Mini GT", "INNO64", "MATCHBOX", "TARMAC", "Tomica", "Other"];
-
 export default function CollectionPage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,10 +23,13 @@ export default function CollectionPage() {
   const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null);
   const [activeLightboxImg, setActiveLightboxImg] = useState(0);
 
+  // Master Data State
+  const [brands, setBrands] = useState<string[]>([]);
+
   // Form State for Admin
   const [formData, setFormData] = useState({
     name: '',
-    brand: 'Hot Wheels',
+    brand: 'HotWheels',
     description: '',
     images: [] as string[],
     is_featured: false
@@ -38,6 +39,7 @@ export default function CollectionPage() {
   const supabase = createClient();
 
   useEffect(() => {
+    fetchMasterData();
     const getCookie = (name: string): string | null => {
       if (typeof document === 'undefined') return null;
       const value = `; ${document.cookie}`;
@@ -52,12 +54,24 @@ export default function CollectionPage() {
     fetchCollection();
   }, []);
 
+  async function fetchMasterData() {
+    const { data } = await supabase
+      .from('master_lov')
+      .select('value')
+      .eq('category', 'brand')
+      .eq('is_active', true);
+    
+    if (data) {
+      setBrands(["All Brands", ...data.map(i => i.value).sort()]);
+    }
+  }
+
   async function fetchCollection() {
     setLoading(true);
     setDbError(false);
     const { data, error } = await supabase
       .from('car_collection')
-      .select('*')
+      .select('id, name, brand, description, images, is_featured, created_at')
       .order('created_at', { ascending: false });
     
     if (error) {
@@ -235,7 +249,7 @@ export default function CollectionPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="flex flex-col lg:flex-row gap-6 mb-12 items-center">
+      <div className="flex flex-col lg:flex-row gap-6 mb-16 items-center">
         <div className="relative flex-1 w-full lg:w-auto">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black" />
           <input 
@@ -243,7 +257,7 @@ export default function CollectionPage() {
             placeholder="Search my collection..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-6 py-4 bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] font-bold outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="w-full pl-12 pr-6 py-4 bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] font-bold outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all rounded-xl"
           />
         </div>
         
@@ -251,15 +265,15 @@ export default function CollectionPage() {
           <select 
             value={selectedBrand}
             onChange={(e) => setSelectedBrand(e.target.value)}
-            className="px-6 py-4 bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] font-black uppercase italic text-sm outline-none cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="px-6 py-4 bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] font-black uppercase italic text-xs outline-none cursor-pointer rounded-xl hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
-            {BRANDS.map(brand => <option key={brand} value={brand}>{brand}</option>)}
+            {brands.map(brand => <option key={brand} value={brand}>{brand}</option>)}
           </select>
 
           <select 
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="px-6 py-4 bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] font-black uppercase italic text-sm outline-none cursor-pointer hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
+            className="px-6 py-4 bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] font-black uppercase italic text-xs outline-none cursor-pointer rounded-xl hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all"
           >
             <option value="newest">Latest Added</option>
             <option value="name">Name A-Z</option>
@@ -389,7 +403,7 @@ export default function CollectionPage() {
                   <div className="flex flex-col gap-1">
                       <label className="text-xs font-black uppercase italic text-black">Brand</label>
                       <select value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} className="border-[3px] border-black p-3 font-bold bg-[#FAF8F5] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] outline-none text-black">
-                        {BRANDS.filter(b => b !== 'All Brands').map(b => <option key={b} value={b}>{b}</option>)}
+                        {brands.filter(b => b !== 'All Brands').map(b => <option key={b} value={b}>{b}</option>)}
                       </select>
                   </div>
               </div>
@@ -454,7 +468,7 @@ function CollectionCard({ item, onImageClick, isAdmin, onEdit }: {
         {item.images && item.images.length > 0 ? (
           <>
             <img 
-              src={item.images[activeImg]} 
+              src={`${item.images[activeImg]}?width=600&quality=75`} 
               alt={item.name} 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 cursor-zoom-in"
               onClick={() => onImageClick(activeImg)}
@@ -479,7 +493,7 @@ function CollectionCard({ item, onImageClick, isAdmin, onEdit }: {
                     onClick={() => setActiveImg(idx)}
                     className={`w-12 h-12 border-[2px] border-black shrink-0 transition-all ${activeImg === idx ? 'opacity-100 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]' : 'opacity-40'}`}
                   >
-                      <img src={img} className="w-full h-full object-cover" />
+                      <img src={`${img}?width=100&quality=50`} className="w-full h-full object-cover" />
                   </button>
               ))}
           </div>

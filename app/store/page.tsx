@@ -9,8 +9,14 @@ export default function StorePage() {
   const [items, setItems] = useState<any[]>([]);
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Master LOV States
+  const [brands, setBrands] = useState<string[]>([]);
+  const [conditions, setConditions] = useState<string[]>([]);
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBrand, setSelectedBrand] = useState('All');
+  const [selectedBrand, setSelectedBrand] = useState('All Brands');
+  const [selectedCondition, setSelectedCondition] = useState('All Conditions');
   const [sortBy, setSortBy] = useState('newest');
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [checkoutStep, setCheckoutStep] = useState<'details' | 'payment' | 'reviews'>('details');
@@ -22,9 +28,8 @@ export default function StorePage() {
 
   const supabase = createClient();
 
-  const brands = ['All', ...Array.from(new Set(items.map(item => item.brand)))].sort();
-
   useEffect(() => {
+    fetchMasterData();
     fetchStoreItems();
     
     // Initial check from localStorage for fast UI
@@ -43,6 +48,21 @@ export default function StorePage() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  async function fetchMasterData() {
+    const { data } = await supabase
+      .from('master_lov')
+      .select('category, value')
+      .eq('is_active', true);
+    
+    if (data) {
+      const b = data.filter(i => i.category === 'brand').map(i => i.value).sort();
+      const c = data.filter(i => i.category === 'condition').map(i => i.value);
+      
+      setBrands(["All Brands", ...b]);
+      setConditions(["All Conditions", ...c]);
+    }
+  }
 
   useEffect(() => {
     if (selectedItem) {
@@ -88,6 +108,7 @@ export default function StorePage() {
     const { data } = await supabase
       .from('inventory')
       .select('*')
+      .eq('is_for_sale', true)
       .gt('stock', 0)
       .order('created_at', { ascending: false });
     
@@ -116,8 +137,13 @@ export default function StorePage() {
     }
 
     // Filter by Brand
-    if (selectedBrand !== 'All') {
+    if (selectedBrand !== 'All Brands') {
       result = result.filter(item => item.brand === selectedBrand);
+    }
+
+    // Filter by Condition
+    if (selectedCondition !== 'All Conditions') {
+        result = result.filter(item => item.condition === selectedCondition);
     }
 
     // Sort Logic
@@ -137,7 +163,7 @@ export default function StorePage() {
     }
 
     setFilteredItems(result);
-  }, [searchQuery, selectedBrand, sortBy, items]);
+  }, [searchQuery, selectedBrand, selectedCondition, sortBy, items]);
 
   const formatIDR = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -154,47 +180,60 @@ export default function StorePage() {
 
   return (
     <main className="flex-1 pt-40 pb-20 px-6 max-w-7xl mx-auto w-full">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-12">
-        <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#A3E635] border-[2px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-black text-[10px] font-black uppercase tracking-widest">
-            <Tag className="w-3 h-3" /> Live Inventory
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 mb-16">
+        <div className="space-y-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#A3E635] border-[2px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black text-[10px] font-black uppercase tracking-widest rounded-full italic">
+            <Tag className="w-3 h-3" /> Exclusive Stock
           </div>
-          <h1 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter text-black">Garasi Premium</h1>
-          <p className="text-black font-bold italic text-sm md:text-base">Cek koleksi pilihan kita dan lengkapin isi garasimu sekarang!</p>
+          <h1 className="text-5xl md:text-7xl font-black uppercase italic tracking-tighter text-black leading-none">
+            Garasi <span className="text-white drop-shadow-[4px_4px_0px_rgba(0,0,0,1)] [-webkit-text-stroke:2px_black]">Premium</span>
+          </h1>
+          <p className="text-black font-bold italic text-sm md:text-lg max-w-xl opacity-80 leading-relaxed">
+            Cek koleksi pilihan kita dan lengkapin isi garasimu sekarang sebelum kehabisan!
+          </p>
         </div>
         
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-          <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full lg:w-auto">
+          <div className="relative w-full md:w-80 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-black group-focus-within:text-[#FB923C] transition-colors" />
             <input 
               type="text" 
-              placeholder="Search items..." 
+              placeholder="Cari diecast impian..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-sm outline-none text-black"
+              className="w-full pl-12 pr-6 py-4 bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] font-bold outline-none focus:translate-x-[2px] focus:translate-y-[2px] focus:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all rounded-xl"
             />
           </div>
 
-          <div className="flex gap-2 w-full sm:w-auto">
+          <div className="flex flex-wrap gap-4 w-full md:w-auto">
             <select 
               value={selectedBrand}
               onChange={(e) => setSelectedBrand(e.target.value)}
-              className="flex-1 sm:w-40 px-4 py-3 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-xs uppercase outline-none appearance-none cursor-pointer"
+              className="flex-1 md:w-44 px-5 py-4 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-xs uppercase italic outline-none cursor-pointer rounded-xl hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all appearance-none text-center"
             >
-              {brands.map(brand => (
+              <option value="All Brands">All Brands</option>
+              {brands.filter(b => b !== 'All Brands').map(brand => (
                 <option key={brand} value={brand}>{brand}</option>
               ))}
             </select>
 
             <select 
+              value={selectedCondition}
+              onChange={(e) => setSelectedCondition(e.target.value)}
+              className="flex-1 md:w-44 px-5 py-4 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-xs uppercase italic outline-none cursor-pointer rounded-xl hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all appearance-none text-center"
+            >
+                {conditions.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+
+            <select 
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="flex-1 sm:w-48 px-4 py-3 bg-[#FFD600] border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-xs uppercase outline-none appearance-none cursor-pointer"
+              className="flex-1 md:w-52 px-5 py-4 bg-[#FFD600] border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] font-black text-xs uppercase italic outline-none cursor-pointer rounded-xl hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all appearance-none text-center"
             >
-              <option value="newest">Terbaru</option>
-              <option value="oldest">Terlama</option>
-              <option value="price-low">Harga Terendah</option>
-              <option value="price-high">Harga Tertinggi</option>
+              <option value="newest">Latest Added</option>
+              <option value="oldest">Oldest Entry</option>
+              <option value="price-low">Lowest Price</option>
+              <option value="price-high">Highest Price</option>
             </select>
           </div>
         </div>
@@ -211,7 +250,11 @@ export default function StorePage() {
             <div key={item.id} onClick={() => {setSelectedItem(item); setActiveImg(0);}} className="neo-brutal-card group flex flex-col p-4 rounded-2xl cursor-pointer">
               <div className="aspect-square bg-[#FAF8F5] border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden mb-4 group-hover:bg-[#FFD600] transition-colors">
                 {item.displayImages.length > 0 ? (
-                  <img src={item.displayImages[0]} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                  <img 
+                    src={`${item.displayImages[0]}?width=400&quality=75`} 
+                    alt={item.name} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                  />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center opacity-10">
                     <ShoppingBag className="w-20 h-20" />

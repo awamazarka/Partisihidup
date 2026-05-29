@@ -4,15 +4,21 @@ import { useState, useEffect } from 'react';
 import { Search, Filter, Plus, Edit, Trash2, Image as ImageIcon, X, Loader2, Upload, Save, Check } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 
-const BRANDS = ["Hot Wheels", "Mini GT", "INNO64", "MATCHBOX", "TARMAC", "Tomica", "Tren Hobby", "Almost Real", "Star Race", "TIME MICRO", "KAIDO HOUSE","POPRACE","Other"];
-const SCALES = ["1:18", "1:43", "1:64", "Other"];
-const CONDITIONS = ["Mint in Sealed Box", "Open Box Good", "Not Good with Box", "Loose", "Damaged"];
-
 export default function InventoryPage() {
   const [items, setItems] = useState<any[]>([]);
   const [filteredItems, setFilteredItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Master LOV States
+  const [brands, setBrands] = useState<string[]>([]);
+  const [scales, setScales] = useState<string[]>([]);
+  const [conditionsList, setConditionsList] = useState<string[]>([]);
+  const [conditionsFilter, setConditionsFilter] = useState<string[]>([]);
+
   const [searchQuery, setSearchQuery] = useState('');
+  const [saleFilter, setSaleFilter] = useState<'all' | 'for_sale' | 'not_for_sale'>('all');
+  const [brandFilter, setBrandFilter] = useState('All Brands');
+  const [conditionFilter, setConditionFilter] = useState('All Conditions');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -20,7 +26,7 @@ export default function InventoryPage() {
   
   const [formData, setFormData] = useState({
     name: '',
-    brand: 'Hot Wheels',
+    brand: 'HotWheels',
     scale: '1:64',
     condition: 'Mint in Sealed Box',
     color: '',
@@ -30,6 +36,7 @@ export default function InventoryPage() {
     image_url: '',
     images: [] as string[],
     description: '',
+    is_for_sale: false,
     marketplace_links: {
         tokopedia: '',
         shopee: '',
@@ -42,8 +49,27 @@ export default function InventoryPage() {
   const supabase = createClient();
 
   useEffect(() => {
+    fetchMasterData();
     fetchInventory();
   }, []);
+
+  async function fetchMasterData() {
+    const { data } = await supabase
+      .from('master_lov')
+      .select('category, value')
+      .eq('is_active', true);
+    
+    if (data) {
+      const b = data.filter(i => i.category === 'brand').map(i => i.value).sort();
+      const s = data.filter(i => i.category === 'scale').map(i => i.value).sort();
+      const c = data.filter(i => i.category === 'condition').map(i => i.value);
+      
+      setBrands(b);
+      setScales(s);
+      setConditionsList(c);
+      setConditionsFilter(["All Conditions", ...c]);
+    }
+  }
 
   async function fetchInventory() {
     setLoading(true);
@@ -64,14 +90,29 @@ export default function InventoryPage() {
   }
 
   useEffect(() => {
-    const filtered = items.filter(item => 
+    let filtered = items.filter(item => 
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.color && item.color.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (item.scale && item.scale.toLowerCase().includes(searchQuery.toLowerCase()))
     );
+
+    if (saleFilter === 'for_sale') {
+      filtered = filtered.filter(item => item.is_for_sale === true);
+    } else if (saleFilter === 'not_for_sale') {
+      filtered = filtered.filter(item => !item.is_for_sale);
+    }
+
+    if (brandFilter !== 'All Brands') {
+        filtered = filtered.filter(item => item.brand === brandFilter);
+    }
+
+    if (conditionFilter !== 'All Conditions') {
+        filtered = filtered.filter(item => item.condition === conditionFilter);
+    }
+
     setFilteredItems(filtered);
-  }, [searchQuery, items]);
+  }, [searchQuery, saleFilter, brandFilter, conditionFilter, items]);
 
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     try {
@@ -161,6 +202,7 @@ export default function InventoryPage() {
       setFormData({ 
         name: '', brand: 'Hot Wheels', scale: '1:64', condition: 'Mint in Sealed Box', color: '', 
         buy_price: 0, sell_price: 0, stock: 0, image_url: '', images: [], description: '',
+        is_for_sale: false,
         marketplace_links: { tokopedia: '', shopee: '', tiktok: '' }
       });
   }
@@ -179,6 +221,7 @@ export default function InventoryPage() {
           image_url: item.image_url || '',
           images: Array.isArray(item.images) ? item.images : (item.image_url ? [item.image_url] : []),
           description: item.description || '',
+          is_for_sale: !!item.is_for_sale,
           marketplace_links: item.marketplace_links || { tokopedia: '', shopee: '', tiktok: '' }
       });
       setIsModalOpen(true);
@@ -227,41 +270,78 @@ export default function InventoryPage() {
   };
 
   return (
-    <main className="flex-1 pt-40 pb-20 px-6 max-w-7xl mx-auto w-full">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
+    <main className="flex-1 pt-32 md:pt-40 pb-20 px-4 md:px-6 max-w-7xl mx-auto w-full">
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-8">
         <div className="space-y-1">
-          <h1 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter text-black">Inventory Manager</h1>
-          <p className="text-black font-bold italic text-sm md:text-base">Total {items.length} assets synced with Supabase.</p>
+          <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-black leading-none">Inventory Manager</h1>
+          <p className="text-black font-bold italic text-[10px] md:text-sm opacity-60">Total {items.length} assets synced with Supabase.</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-            <div className="relative flex-1 sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-black" />
-                <input 
-                  type="text" 
-                  placeholder="Search assets..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black text-sm outline-none text-black"
-                />
+        
+        <div className="flex flex-col md:flex-row gap-3 w-full xl:w-auto">
+            {/* Search & Basic Filters */}
+            <div className="flex flex-col sm:flex-row gap-2 flex-1 md:flex-none">
+                <div className="relative flex-1 md:w-56 flex items-center">
+                    <Search className="absolute left-3 w-3.5 h-3.5 text-black z-10" />
+                    <input 
+                    type="text" 
+                    placeholder="Quick search..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2.5 bg-white border-[2px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] font-bold text-xs outline-none text-black focus:translate-x-[1px] focus:translate-y-[1px] focus:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] transition-all h-[42px]"
+                    />
+                </div>
+                
+                <div className="flex border-[2px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] bg-white overflow-hidden rounded-lg h-[42px]">
+                    {(['all', 'for_sale', 'not_for_sale'] as const).map((f) => (
+                        <button 
+                            key={f}
+                            onClick={() => setSaleFilter(f)}
+                            className={`px-3 py-1 text-[8px] font-black uppercase italic transition-all border-r-[2px] last:border-r-0 border-black flex-1 ${saleFilter === f ? (f === 'for_sale' ? 'bg-[#A3E635]' : f === 'not_for_sale' ? 'bg-[#FB923C]' : 'bg-black text-[#FFD600]') : 'bg-white text-black hover:bg-zinc-100'}`}
+                        >
+                            {f === 'all' ? 'All' : f === 'for_sale' ? 'Store' : 'Inv'}
+                        </button>
+                    ))}
+                </div>
             </div>
-            <div className="flex gap-4">
-                <button 
-                onClick={() => setIsBulkOpen(true)}
-                className="flex-1 sm:flex-none bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase px-6 py-3 flex items-center justify-center gap-2 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all text-black"
+
+            {/* Select Filters & Actions */}
+            <div className="flex flex-wrap gap-2 items-center">
+                <select 
+                    value={brandFilter}
+                    onChange={(e) => setBrandFilter(e.target.value)}
+                    className="px-3 py-2.5 bg-white border-[2px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] font-black uppercase italic text-[9px] outline-none cursor-pointer rounded-lg hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all h-[42px] min-w-[100px]"
                 >
-                <Upload className="w-5 h-5" /> Bulk
-                </button>
-                <button 
-                onClick={() => setIsModalOpen(true)}
-                className="flex-1 sm:flex-none neo-brutal-btn-yellow flex items-center justify-center gap-3 text-lg"
+                    <option value="All Brands">All Brands</option>
+                    {brands.map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+
+                <select 
+                    value={conditionFilter}
+                    onChange={(e) => setConditionFilter(e.target.value)}
+                    className="px-3 py-2.5 bg-white border-[2px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] font-black uppercase italic text-[9px] outline-none cursor-pointer rounded-lg hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all h-[42px] min-w-[100px]"
                 >
-                <Plus className="w-6 h-6" /> Add
-                </button>
+                    {conditionsFilter.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+
+                <div className="flex gap-2 flex-1 sm:flex-none">
+                    <button 
+                    onClick={() => setIsBulkOpen(true)}
+                    className="flex-1 sm:flex-none bg-white border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase text-xs px-6 py-4 flex items-center justify-center gap-2 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-black h-[52px] rounded-xl"
+                    >
+                    <Upload className="w-5 h-5" /> Bulk
+                    </button>
+                    <button 
+                    onClick={() => setIsModalOpen(true)}
+                    className="flex-1 sm:flex-none bg-[#FFD600] border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] font-black uppercase text-xs px-6 py-4 flex items-center justify-center gap-2 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-black h-[52px] rounded-xl"
+                    >
+                    <Plus className="w-5 h-5" /> Add
+                    </button>
+                </div>
             </div>
         </div>
       </div>
 
-      <div className="bg-white border-[4px] border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] rounded-3xl overflow-hidden">
+      <div className="bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-2xl overflow-hidden">
         {loading ? (
           <div className="p-24 flex flex-col items-center justify-center gap-4">
             <Loader2 className="w-12 h-12 text-black animate-spin" />
@@ -384,9 +464,9 @@ export default function InventoryPage() {
 
               {/* Specs */}
               <div className="grid grid-cols-3 gap-4">
-                  <SelectField label="Brand" value={formData.brand} options={BRANDS} onChange={v => setFormData({...formData, brand: v})} />
-                  <SelectField label="Scale" value={formData.scale} options={SCALES} onChange={v => setFormData({...formData, scale: v})} />
-                  <SelectField label="Condition" value={formData.condition} options={CONDITIONS} onChange={v => setFormData({...formData, condition: v})} />
+                  <SelectField label="Brand" value={formData.brand} options={brands} onChange={v => setFormData({...formData, brand: v})} />
+                  <SelectField label="Scale" value={formData.scale} options={scales} onChange={v => setFormData({...formData, scale: v})} />
+                  <SelectField label="Condition" value={formData.condition} options={conditionsList} onChange={v => setFormData({...formData, condition: v})} />
               </div>
 
               {/* Description Section */}
@@ -405,10 +485,21 @@ export default function InventoryPage() {
               </div>
 
               {/* Pricing & Stock */}
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <InputGroup label="Buy (IDR)" value={formData.buy_price} onChange={v => setFormData({...formData, buy_price: v})} />
                 <InputGroup label="Sell (IDR)" value={formData.sell_price} onChange={v => setFormData({...formData, sell_price: v})} />
                 <InputGroup label="Qty" value={formData.stock} onChange={v => setFormData({...formData, stock: v})} />
+                
+                {/* For Sale Flag */}
+                <div 
+                    onClick={() => setFormData({...formData, is_for_sale: !formData.is_for_sale})}
+                    className={`flex items-center justify-between p-3 border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] cursor-pointer transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${formData.is_for_sale ? 'bg-[#A3E635]' : 'bg-white'}`}
+                >
+                    <span className="text-[10px] font-black uppercase italic text-black">Siap Jual</span>
+                    <div className={`w-5 h-5 border-[2px] border-black flex items-center justify-center ${formData.is_for_sale ? 'bg-black' : 'bg-white'}`}>
+                        {formData.is_for_sale && <Check className="w-3 h-3 text-[#A3E635]" />}
+                    </div>
+                </div>
               </div>
 
               {/* Marketplace Links */}

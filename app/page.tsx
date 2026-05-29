@@ -7,22 +7,39 @@ import { createClient } from '@/utils/supabase/client';
 
 export default function Home() {
   const [featuredItems, setFeaturedItems] = useState<any[]>([]);
+  const [brands, setBrands] = useState<string[]>([]);
   const [isMounted, setIsMounted] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
     setIsMounted(true);
-    async function fetchFeatured() {
-      const { data } = await supabase
-        .from('car_collection')
-        .select('*')
-        .eq('is_featured', true)
-        .limit(4);
-      
-      if (data) setFeaturedItems(data);
-    }
     fetchFeatured();
+    fetchBrands();
   }, []);
+
+  async function fetchFeatured() {
+    const { data } = await supabase
+      .from('car_collection')
+      .select('*')
+      .eq('is_featured', true)
+      .limit(4);
+    
+    if (data) setFeaturedItems(data);
+  }
+
+  async function fetchBrands() {
+    const { data } = await supabase
+      .from('master_lov')
+      .select('value')
+      .eq('category', 'brand')
+      .eq('is_active', true);
+    
+    if (data) {
+      const b = data.map(i => i.value).sort();
+      // Triple the array to ensure seamless looping
+      setBrands([...b, ...b, ...b]);
+    }
+  }
 
   return (
     <div className="relative min-h-screen flex flex-col bg-zinc-950 overflow-hidden text-white selection:bg-[#FFD600] selection:text-black font-sans">
@@ -108,12 +125,12 @@ export default function Home() {
 
         {/* Brand Marquee - Yellow Bar */}
         <div className="w-full py-6 md:py-10 bg-[#FFDE03] border-y-[4px] border-black mt-8 md:mt-24 transform -rotate-1 relative z-20 overflow-hidden">
-            <div className="flex animate-scroll gap-10 md:gap-24 items-center whitespace-nowrap px-10">
-                {[
+            <div className="flex animate-scroll-fast gap-10 md:gap-24 items-center whitespace-nowrap px-10">
+                {(brands.length > 0 ? brands : [
                     'INNO64', 'KAIDOHOUSE', 'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS',
                     'INNO64', 'KAIDOHOUSE', 'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS',
                     'INNO64', 'KAIDOHOUSE', 'HOT WHEELS', 'MATCHBOX', 'TOMICA', 'MINI GT', 'TARMAC WORKS'
-                ].map((brand, i) => (
+                ]).map((brand, i) => (
                     <span key={i} className="text-2xl md:text-5xl font-black italic uppercase tracking-tighter text-black">
                         {brand}
                     </span>

@@ -27,6 +27,10 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState('All');
+  
+  // Master LOV State
+  const [brands, setBrands] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -42,8 +46,18 @@ export default function OrdersPage() {
   const supabase = createClient();
 
   useEffect(() => {
+    fetchMasterData();
     fetchData();
   }, []);
+
+  async function fetchMasterData() {
+    const { data } = await supabase
+      .from('master_lov')
+      .select('value')
+      .eq('category', 'brand')
+      .eq('is_active', true);
+    if (data) setBrands(data.map(i => i.value).sort());
+  }
 
   async function fetchData() {
     setLoading(true);
@@ -53,6 +67,7 @@ export default function OrdersPage() {
     const { data: invData, error: invError } = await supabase
       .from('inventory')
       .select('*')
+      .eq('is_for_sale', true)
       .order('name');
     
     if (invError) {
@@ -320,7 +335,7 @@ CREATE POLICY "Allow all access" ON orders FOR ALL USING (true) WITH CHECK (true
 
       {/* New Order Modal */}
       {isFormOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-white/20 backdrop-blur-md">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-white/20 backdrop-blur-md">
           <div className="bg-white border-[4px] border-black shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] w-full max-w-2xl rounded-3xl p-10 relative max-h-[90vh] overflow-y-auto">
             <button onClick={() => setIsFormOpen(false)} className="absolute top-8 right-8 p-1 border-[3px] border-black bg-[#FB923C] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all">
               <X className="w-6 h-6 text-black" />
