@@ -62,16 +62,15 @@ export default function Home() {
 
           {/* Intensified Rain Layer */}
           <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-            {isMounted && [...Array(60)].map((_, i) => (
+            {isMounted && [...Array(80)].map((_, i) => (
               <div 
                 key={i} 
-                className="absolute w-[1px] md:w-[2px] h-20 md:h-32 bg-white/40 animate-rain" 
+                className="absolute w-[1.5px] h-24 bg-white/30 animate-rain" 
                 style={{
                   left: `${Math.random() * 100}%`,
-                  top: `-${Math.random() * 100}%`,
-                  animationDelay: `${Math.random() * 2}s`,
-                  animationDuration: `${0.6 + Math.random() * 0.4}s`,
-                  filter: 'blur(0.5px)'
+                  top: '-10%',
+                  animationDelay: `${Math.random() * 5}s`,
+                  animationDuration: `${0.5 + Math.random() * 0.5}s`,
                 }}
               />
             ))}
@@ -79,16 +78,16 @@ export default function Home() {
 
           {/* Neon Light Streaks (Motion Blur) */}
           <div className="absolute inset-0 z-20 pointer-events-none overflow-hidden">
-            {isMounted && [...Array(12)].map((_, i) => (
+            {isMounted && [...Array(15)].map((_, i) => (
               <div 
                 key={i} 
-                className="absolute h-[2px] w-[400px] animate-neon-streak group-hover:h-[3px] group-hover:w-[600px] group-hover:brightness-150 transition-all duration-500 blur-[1px]" 
+                className="absolute h-[2px] w-[300px] md:w-[500px] animate-neon-streak group-hover:h-[3px] group-hover:brightness-150 transition-all duration-500 blur-[1px]" 
                 style={{
-                  top: `${10 + Math.random() * 80}%`,
+                  top: `${Math.random() * 100}%`,
                   backgroundColor: i % 3 === 0 ? '#00FFFF' : i % 3 === 1 ? '#FF007A' : '#FFDE03',
-                  boxShadow: `0 0 25px ${i % 3 === 0 ? '#00FFFF' : i % 3 === 1 ? '#FF007A' : '#FFDE03'}`,
-                  animationDelay: `${Math.random() * 4}s`,
-                  animationDuration: `${1.2 + Math.random() * 1.5}s`
+                  boxShadow: `0 0 20px ${i % 3 === 0 ? '#00FFFF' : i % 3 === 1 ? '#FF007A' : '#FFDE03'}`,
+                  animationDelay: `${Math.random() * 8}s`,
+                  animationDuration: `${1.5 + Math.random() * 2}s`
                 }}
               />
             ))}
