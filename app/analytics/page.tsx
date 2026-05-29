@@ -121,10 +121,21 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-[#FAF8F5]">
-        <Loader2 className="w-12 h-12 animate-spin text-black" />
-        <p className="font-black uppercase italic tracking-tighter">Generative Analysis in Progress...</p>
-      </div>
+      <main className="flex-1 pt-40 pb-20 px-6 max-w-7xl mx-auto w-full space-y-12">
+        <div className="space-y-4">
+            <div className="h-4 w-32 skeleton-neon border-[1px] border-black" />
+            <div className="h-16 w-1/2 skeleton-neon border-[3px] border-black" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-40 skeleton-neon border-[4px] border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-3xl" />
+            ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 h-[450px] skeleton-neon border-[4px] border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] rounded-3xl" />
+            <div className="h-[450px] skeleton-neon border-[4px] border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] rounded-3xl" />
+        </div>
+      </main>
     );
   }
 

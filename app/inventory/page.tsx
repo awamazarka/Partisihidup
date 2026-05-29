@@ -343,9 +343,17 @@ export default function InventoryPage() {
 
       <div className="bg-white border-[3px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="p-24 flex flex-col items-center justify-center gap-4">
-            <Loader2 className="w-12 h-12 text-black animate-spin" />
-            <p className="font-black uppercase italic text-black">Syncing Garage...</p>
+          <div className="p-10 space-y-6">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex gap-6 items-center">
+                <div className="w-16 h-16 skeleton-neon border-[2px] border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] shrink-0" />
+                <div className="flex-1 space-y-3">
+                  <div className="h-6 w-1/3 skeleton-neon border-[1px] border-black" />
+                  <div className="h-4 w-1/4 skeleton-neon border-[1px] border-black opacity-50" />
+                </div>
+                <div className="w-24 h-8 skeleton-neon border-[2px] border-black hidden md:block" />
+              </div>
+            ))}
           </div>
         ) : (
           <div className="overflow-x-auto">

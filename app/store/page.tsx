@@ -240,9 +240,18 @@ export default function StorePage() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center py-24 gap-4">
-          <Loader2 className="w-12 h-12 text-black animate-spin" />
-          <p className="font-black uppercase italic text-black">Opening the Garage...</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="neo-brutal-card p-4 rounded-2xl flex flex-col gap-4">
+                    <div className="aspect-square skeleton-neon border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl" />
+                    <div className="h-6 w-3/4 skeleton-neon border-[1px] border-black" />
+                    <div className="h-4 w-1/2 skeleton-neon border-[1px] border-black opacity-50" />
+                    <div className="mt-auto pt-4 border-t-[2px] border-black border-dashed flex justify-between items-center">
+                        <div className="h-8 w-24 skeleton-neon border-[1px] border-black" />
+                        <div className="w-10 h-10 skeleton-neon border-[2px] border-black" />
+                    </div>
+                </div>
+            ))}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
