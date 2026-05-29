@@ -179,7 +179,7 @@ export default function StorePage() {
   };
 
   return (
-    <main className="flex-1 pt-40 pb-20 px-6 max-w-7xl mx-auto w-full">
+    <main className="flex-1 pt-48 md:pt-52 pb-20 px-6 max-w-7xl mx-auto w-full">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-10 mb-16">
         <div className="space-y-4">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#A3E635] border-[2px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-black text-[10px] font-black uppercase tracking-widest rounded-full italic">

@@ -270,8 +270,8 @@ export default function InventoryPage() {
   };
 
   return (
-    <main className="flex-1 pt-32 md:pt-40 pb-20 px-4 md:px-6 max-w-7xl mx-auto w-full">
-      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-8">
+    <main className="flex-1 pt-48 md:pt-52 pb-20 px-4 md:px-6 max-w-7xl mx-auto w-full">
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-12">
         <div className="space-y-1">
           <h1 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-black leading-none">Inventory Manager</h1>
           <p className="text-black font-bold italic text-[10px] md:text-sm opacity-60">Total {items.length} assets synced with Supabase.</p>

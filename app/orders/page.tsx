@@ -269,9 +269,9 @@ CREATE POLICY "Allow all access" ON orders FOR ALL USING (true) WITH CHECK (true
   }
 
   return (
-    <main className="flex-1 pt-40 pb-20 px-6 max-w-7xl mx-auto w-full">
+    <main className="flex-1 pt-48 md:pt-52 pb-20 px-6 max-w-7xl mx-auto w-full">
       {/* Header & Stats */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-16">
         <div>
           <h1 className="text-5xl font-black uppercase italic tracking-tighter flex items-center gap-4">
             <div className="p-3 bg-[#FB923C] border-[3px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
