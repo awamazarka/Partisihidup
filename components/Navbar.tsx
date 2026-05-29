@@ -114,23 +114,27 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
   const navItems = role === 'admin' ? adminItems : userItems;
 
   const handleLogout = async () => {
+    await supabase.auth.signOut();
     localStorage.removeItem('user-role');
+    document.cookie = "user-role=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    setRole(null);
+    setUsername(null);
     setIsMenuOpen(false);
-    await signOut();
+    window.location.href = '/login';
   };
 
   return (
     <>
       <nav 
         className={`
-          fixed z-[100] top-0 left-0 w-full transition-all duration-500 ease-in-out pointer-events-none
+          fixed z-[100] top-0 left-0 w-full transition-all duration-500 ease-in-out
           ${isScrolled ? 'pt-3 md:pt-6' : 'pt-0'}
-          ${isGameActive ? 'opacity-0' : 'opacity-100'}
+          ${isGameActive ? 'opacity-0 pointer-events-none' : 'opacity-100'}
         `}
       >
         <div 
           className={`
-            transition-all duration-500 ease-in-out flex items-center justify-between mx-auto pointer-events-none
+            transition-all duration-500 ease-in-out flex items-center justify-between mx-auto
             ${isScrolled 
               ? 'w-[94%] max-w-7xl bg-white/95 backdrop-blur-md border-[2px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl md:rounded-2xl px-4 md:px-8 py-2 md:py-3' 
               : 'w-full bg-transparent border-none shadow-none rounded-none px-6 md:px-16 py-4 md:py-8'
@@ -138,7 +142,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
           `}
         >
           {/* Logo Section */}
-          <Link href="/" className="flex items-center gap-3 md:gap-6 group shrink-0 pointer-events-auto">
+          <Link href="/" className="flex items-center gap-3 md:gap-6 group shrink-0">
             <div className={`
               flex items-center justify-center transition-all duration-500
               ${isScrolled 
@@ -156,7 +160,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
             </div>
             <div className="flex flex-col">
               <span className={`font-black tracking-tighter uppercase italic leading-none transition-all ${textColor} ${isScrolled ? 'text-lg md:text-2xl' : 'text-2xl md:text-4xl'}`}>
-                AB-OnlyDiecast
+                Only Diecaster
               </span>
               {!isScrolled && (
                 <span className={`hidden md:block font-bold text-[10px] uppercase tracking-widest mt-1 ${isHomePage ? 'text-[#FFD600]' : 'text-[#FB923C]'}`}>
@@ -168,7 +172,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
 
           
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-1 xl:gap-2 pointer-events-auto">
+          <div className="hidden lg:flex items-center gap-1 xl:gap-2">
             {navItems.map((item) => (
               <Link
                 key={item.name}
@@ -200,7 +204,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
           </div>
 
           {/* Mobile Right Controls */}
-          <div className="flex lg:hidden items-center gap-3 pointer-events-auto">
+          <div className="flex lg:hidden items-center gap-3">
             <button 
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className={`border-[2.5px] border-black p-2 bg-[#FFD600] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px] transition-all text-black`}
@@ -212,7 +216,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
 
         {/* Mobile Menu Dropdown - FULLY OPTIMIZED */}
         <div className={`
-          lg:hidden absolute top-full left-1/2 -translate-x-1/2 w-[94%] mt-3 bg-white border-[3px] border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] rounded-2xl overflow-hidden transition-all duration-500 transform origin-top pointer-events-auto
+          lg:hidden absolute top-full left-1/2 -translate-x-1/2 w-[94%] mt-3 bg-white border-[3px] border-black shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] rounded-2xl overflow-hidden transition-all duration-500 transform origin-top
           ${isMenuOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-10 scale-95 !pointer-events-none'}
         `}>
           <div className="max-h-[80vh] overflow-y-auto p-4 flex flex-col gap-2">
