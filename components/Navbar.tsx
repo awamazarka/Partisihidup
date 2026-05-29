@@ -3,7 +3,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Box, ShoppingCart, Calculator, BarChart3, ReceiptText, Home, Menu, X, LogOut, Sparkles, UserCircle, Gamepad2 } from 'lucide-react';
+import { 
+  LayoutDashboard, Box, ShoppingCart, Calculator, 
+  BarChart3, ReceiptText, Home, Menu, X, LogOut, 
+  Sparkles, UserCircle, Gamepad2, Moon, CloudRain 
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { signOut } from '@/app/auth/actions';
 import { createClient } from '@/utils/supabase/client';
@@ -33,6 +37,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isGameActive, setIsGameActive] = useState(false);
+  const [lofiActive, setLofiActive] = useState(false);
 
   const isHomePage = pathname === '/';
   const isGamePage = pathname === '/game';
@@ -41,7 +46,13 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
   const supabase = createClient();
 
   useEffect(() => {
-    // Listen for game activity to hide navbar
+    // Initial check for lofi
+    if (typeof window !== 'undefined') {
+        const savedLofi = localStorage.getItem('lofi-mode') === 'true';
+        setLofiActive(savedLofi);
+        if (savedLofi) document.body.classList.add('lofi-active');
+    }
+
     const handleGameActive = (e: any) => setIsGameActive(e.detail);
     window.addEventListener('game-active', handleGameActive);
 
@@ -61,7 +72,6 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
     const getUser = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-            // Fetch username directly from profiles table
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('username')
@@ -109,9 +119,20 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
         window.removeEventListener('game-active', handleGameActive);
         subscription.unsubscribe();
     };
-  }, [initialRole, supabase.auth]);
+  }, [initialRole]);
 
   const navItems = role === 'admin' ? adminItems : userItems;
+
+  const handleVibeToggle = () => {
+    const newState = !lofiActive;
+    setLofiActive(newState);
+    localStorage.setItem('lofi-mode', newState.toString());
+    if (newState) {
+        document.body.classList.add('lofi-active');
+    } else {
+        document.body.classList.remove('lofi-active');
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -125,16 +146,17 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
 
   return (
     <>
+      {lofiActive && <div className="lofi-rain" />}
       <nav 
         className={`
-          fixed z-[100] top-0 left-0 w-full transition-all duration-500 ease-in-out pointer-events-none
+          fixed z-[100] top-0 left-0 w-full transition-all duration-500 ease-in-out
           ${isScrolled ? 'pt-3 md:pt-6' : 'pt-0'}
-          ${isGameActive ? 'opacity-0' : 'opacity-100'}
+          ${isGameActive ? 'opacity-0 pointer-events-none' : 'opacity-100'}
         `}
       >
         <div 
           className={`
-            transition-all duration-500 ease-in-out flex items-center justify-between mx-auto pointer-events-none
+            transition-all duration-500 ease-in-out flex items-center justify-between mx-auto
             ${isScrolled 
               ? 'w-[94%] max-w-7xl glass-effect border-[2px] border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-xl md:rounded-2xl px-4 md:px-8 py-2 md:py-3' 
               : 'w-full bg-transparent border-none shadow-none rounded-none px-6 md:px-16 py-4 md:py-8'
@@ -142,7 +164,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
           `}
         >
           {/* Logo Section */}
-          <Link href="/" className="flex items-center gap-3 md:gap-6 group shrink-0 pointer-events-auto">
+          <Link href="/" className="flex items-center gap-3 md:gap-6 group shrink-0">
             <div className={`
               flex items-center justify-center transition-all duration-500
               ${isScrolled 
@@ -172,7 +194,16 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
 
           
           {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-1 xl:gap-2 pointer-events-auto">
+          <div className="hidden lg:flex items-center gap-1 xl:gap-2">
+            {/* Lofi Toggle */}
+            <button 
+                onClick={handleVibeToggle}
+                className={`p-2 transition-all mr-2 flex items-center justify-center hover:scale-110 active:scale-95 ${lofiActive ? 'text-[#A3E635]' : textColor}`}
+                title="Lo-Fi Vibe Toggle"
+            >
+                {lofiActive ? <CloudRain className="w-6 h-6 animate-pulse" /> : <Moon className="w-6 h-6" />}
+            </button>
+
             {navItems.map((item) => (
               <Link
                 key={item.name}
@@ -204,7 +235,13 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
           </div>
 
           {/* Mobile Right Controls */}
-          <div className="flex lg:hidden items-center gap-3 pointer-events-auto">
+          <div className="flex lg:hidden items-center gap-3">
+            <button 
+                onClick={handleVibeToggle}
+                className={`p-2 transition-all flex items-center justify-center ${lofiActive ? 'text-[#A3E635]' : (isScrolled ? 'text-black' : 'text-white')}`}
+            >
+                {lofiActive ? <CloudRain className="w-6 h-6 animate-pulse" /> : <Moon className="w-6 h-6" />}
+            </button>
             <button 
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className={`border-[2.5px] border-black p-2 bg-[#FFD600] shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-x-[1px] active:translate-y-[1px] transition-all text-black`}
@@ -239,7 +276,7 @@ export default function Navbar({ initialRole }: { initialRole: string | null }) 
                     key={item.name}
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center gap-3 p-4 border-[2px] border-black bg-[#FAF8F5] font-black uppercase italic text-xs hover:bg-[#FFD600] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all text-black"
+                    className="flex items-center gap-3 p-4 border-[2px] border-black bg-white/50 font-black uppercase italic text-xs hover:bg-[#FFD600] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none transition-all text-black"
                 >
                     <item.icon className="w-4 h-4 shrink-0" />
                     {item.name}

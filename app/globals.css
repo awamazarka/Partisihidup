@@ -64,37 +64,46 @@ body {
     100% { transform: translateX(100%); }
   }
 
+  /* Lo-Fi Rain Effect */
+  .lofi-rain {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .lofi-rain::before, .lofi-rain::after {
+    content: "";
+    position: absolute;
+    top: -100%;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background-image: 
+        linear-gradient(90deg, rgba(163, 230, 53, 0.1) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(163, 230, 53, 0.1) 1px, transparent 1px);
+    background-size: 80px 150px;
+    animation: rain-fall 1.5s linear infinite;
+    opacity: 0.3;
+  }
+
+  .lofi-rain::after {
+    background-size: 120px 250px;
+    animation-duration: 2.5s;
+    opacity: 0.1;
+  }
+
+  @keyframes rain-fall {
+    0% { transform: translateY(0) rotate(15deg); }
+    100% { transform: translateY(50%) rotate(15deg); }
+  }
+
   /* --- ANIMATIONS --- */
-
-  @keyframes rain {
-    0% { transform: translateY(-100vh) translateX(40px); opacity: 0; }
-    30% { opacity: 0.8; }
-    100% { transform: translateY(100vh) translateX(-40px); opacity: 0; }
-  }
-
-  .animate-rain {
-    animation: rain 1.5s linear infinite;
-  }
-
-  @keyframes neon-streak {
-    0% { transform: translateX(-100vw); opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { transform: translateX(100vw); opacity: 0; }
-  }
-
-  .animate-neon-streak {
-    animation: neon-streak 3s linear infinite;
-  }
-
-  @keyframes neon-pulse {
-    0%, 100% { opacity: 0.4; filter: blur(40px); }
-    50% { opacity: 0.8; filter: blur(60px); }
-  }
-
-  .animate-neon-pulse {
-    animation: neon-pulse 4s ease-in-out infinite;
-  }
 
   @keyframes scroll {
     0% { transform: translateX(0); }
@@ -116,28 +125,6 @@ body {
   @keyframes scroll-reverse {
     0% { transform: translateX(-50%); }
     100% { transform: translateX(0); }
-  }
-
-  .animate-scroll-fast-reverse {
-    animation: scroll-reverse 12s linear infinite;
-  }
-
-  @keyframes drive-left {
-    0% { transform: translateX(100vw); }
-    100% { transform: translateX(-100vw); }
-  }
-
-  .animate-drive-left {
-    animation: drive-left 15s linear infinite;
-  }
-
-  @keyframes drive-right {
-    0% { transform: translateX(-100vw); }
-    100% { transform: translateX(100vw); }
-  }
-
-  .animate-drive-right {
-    animation: drive-right 15s linear infinite;
   }
 
   /* Custom Scrollbar for better UX in modals */
